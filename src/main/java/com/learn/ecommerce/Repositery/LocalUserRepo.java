@@ -1,0 +1,13 @@
+package com.learn.ecommerce.Repositery;
+
+
+import com.learn.ecommerce.model.LocalUser;
+import org.springframework.data.repository.CrudRepository;
+
+import java.util.Optional;
+
+public interface LocalUserRepo extends CrudRepository<LocalUser,Long> {
+    Optional<LocalUser> findByUserNameIgnoreCase(String userName);
+
+    Optional<LocalUser> findByEmailIgnoreCase(String email);
+}
