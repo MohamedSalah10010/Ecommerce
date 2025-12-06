@@ -23,7 +23,6 @@ public class AuthenticationController {
 
         try {
             userServices.registerUser(registrationBody);
-//            System.out.println(registrationBody.toString());
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (UserAlreadyExistsException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
