@@ -1,8 +1,11 @@
 package com.learn.ecommerce.controller;
 
+import com.learn.ecommerce.api.model.LoginBody;
+import com.learn.ecommerce.api.model.LoginResponse;
 import com.learn.ecommerce.api.model.RegistrationBody;
 import com.learn.ecommerce.exception.UserAlreadyExistsException;
-import com.learn.ecommerce.services.UserServices;
+import com.learn.ecommerce.services.JwtService;
+import com.learn.ecommerce.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,22 +15,34 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 public class AuthenticationController {
 
-    private UserServices userServices;
+    private UserService userService;
 
-    public AuthenticationController(UserServices userServices) {
-        this.userServices = userServices;
+    public AuthenticationController(UserService userService) {
+        this.userService = userService;
     }
 
     @PostMapping("/register")
-    public ResponseEntity registerUser(@Valid @RequestBody RegistrationBody registrationBody) {
+    public ResponseEntity registerUser(@Valid @RequestBody RegistrationBody registrationBody)
+    {
 
         try {
-            userServices.registerUser(registrationBody);
+            userService.registerUser(registrationBody);
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (UserAlreadyExistsException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
+    }
 
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginBody loginBody)
+    {
+        String jwt = userService.loginUser(loginBody);
+        if (jwt == null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        LoginResponse response = new LoginResponse();
+        response.setJwt(jwt);
+        return ResponseEntity.ok(response);
     }
 }
