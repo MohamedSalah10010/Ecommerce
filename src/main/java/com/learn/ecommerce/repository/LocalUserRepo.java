@@ -1,4 +1,4 @@
-package com.learn.ecommerce.Repositery;
+package com.learn.ecommerce.repository;
 
 
 import com.learn.ecommerce.model.LocalUser;

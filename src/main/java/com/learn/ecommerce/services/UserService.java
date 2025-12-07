@@ -1,6 +1,6 @@
 package com.learn.ecommerce.services;
 
-import com.learn.ecommerce.Repositery.LocalUserRepo;
+import com.learn.ecommerce.repository.LocalUserRepo;
 import com.learn.ecommerce.api.model.LoginBody;
 import com.learn.ecommerce.api.model.RegistrationBody;
 import com.learn.ecommerce.exception.UserAlreadyExistsException;

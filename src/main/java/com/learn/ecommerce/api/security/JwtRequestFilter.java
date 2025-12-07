@@ -1,7 +1,7 @@
 package com.learn.ecommerce.api.security;
 
 import com.auth0.jwt.exceptions.JWTDecodeException;
-import com.learn.ecommerce.Repositery.LocalUserRepo;
+import com.learn.ecommerce.repository.LocalUserRepo;
 import com.learn.ecommerce.model.LocalUser;
 import com.learn.ecommerce.services.JwtService;
 import jakarta.servlet.FilterChain;
@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -36,6 +35,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                                     FilterChain filterchain)
             throws ServletException, IOException
     {
+        String path = request.getServletPath();
+
+        // Skip JWT filter for login & register
+        if ("/auth/login".equals(path) || "/auth/register".equals(path)) {
+            filterchain.doFilter(request, response);
+            return;
+        }
+
         String header = request.getHeader("Authorization");
 
         if(header != null && header.startsWith("Bearer ")){
