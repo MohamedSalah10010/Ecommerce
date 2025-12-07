@@ -1,5 +1,6 @@
 package com.learn.ecommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -10,6 +11,7 @@ public class OrderQuantities {
     @Column(name = "id", nullable = false)
     private Long id;
 
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
@@ -17,6 +19,7 @@ public class OrderQuantities {
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
+    @JsonIgnore
     @ManyToOne(optional = false)
     @JoinColumn(name = "web_order_id", nullable = false)
     private WebOrder webOrder;

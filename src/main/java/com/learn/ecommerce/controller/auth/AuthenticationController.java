@@ -1,4 +1,4 @@
-package com.learn.ecommerce.controller;
+package com.learn.ecommerce.controller.auth;
 
 import com.learn.ecommerce.repository.LocalUserRepo;
 import com.learn.ecommerce.api.model.LoginBody;
