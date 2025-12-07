@@ -1,5 +1,6 @@
 package com.learn.ecommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ public class LocalUser {
     private String userName;
 
     @Column(name = "password", nullable = false,length = 1000)
+    @JsonIgnore
     private String password;
 
     @Column(name = "email", nullable = false, unique = true)
@@ -31,6 +33,7 @@ public class LocalUser {
     private String lastName;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @JsonIgnore
     private Collection<Address> addresses = new ArrayList<>();
 
 //    @OneToMany(mappedBy = "localUser", cascade = CascadeType.REMOVE, orphanRemoval = true)
@@ -43,6 +46,7 @@ public class LocalUser {
 //    public void setWebOrders(Set<WebOrder> webOrders) {
 //        this.webOrders = webOrders;
 //    }
+
 
     public Collection<Address> getAddresses() {
         return addresses;
