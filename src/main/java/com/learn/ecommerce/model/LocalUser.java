@@ -36,6 +36,28 @@ public class LocalUser {
     @JsonIgnore
     private Collection<Address> addresses = new ArrayList<>();
 
+    @OneToMany(mappedBy = "localUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Collection<VerificationToken> verificationTokens = new ArrayList<>();
+
+    @Column(name = "is_enabled", nullable = false)
+    private Boolean isEnabled = false;
+
+    public Boolean getIsEnabled() {
+        return isEnabled;
+    }
+
+    public void setIsEnabled(Boolean isEnabled) {
+        this.isEnabled = isEnabled;
+    }
+
+    public Collection<VerificationToken> getVerificationTokens() {
+        return verificationTokens;
+    }
+
+    public void setVerificationTokens(Collection<VerificationToken> verificationTokens) {
+        this.verificationTokens = verificationTokens;
+    }
+
 //    @OneToMany(mappedBy = "localUser", cascade = CascadeType.REMOVE, orphanRemoval = true)
 //    private Set<WebOrder> webOrders = new LinkedHashSet<>();
 //
