@@ -1,4 +1,4 @@
-package com.learn.ecommerce.controller;
+package com.learn.ecommerce.api.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

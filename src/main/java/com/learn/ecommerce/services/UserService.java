@@ -6,11 +6,11 @@ import com.learn.ecommerce.api.model.LoginBody;
 import com.learn.ecommerce.api.model.RegistrationBody;
 import com.learn.ecommerce.exception.UserAlreadyExistsException;
 import com.learn.ecommerce.model.LocalUser;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Optional;
 
 @Service
@@ -31,7 +31,7 @@ public class UserService {
 
     }
 
-    public LocalUser registerUser(RegistrationBody body) throws UserAlreadyExistsException {
+    public LocalUser registerUser(@NotNull RegistrationBody body) throws UserAlreadyExistsException {
         if(userRepository.findByEmailIgnoreCase(body.getEmail()).isPresent()
             || userRepository.findByUserNameIgnoreCase(body.getUsername()).isPresent())
         {

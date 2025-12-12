@@ -1,4 +1,4 @@
-package com.learn.ecommerce.controller.order;
+package com.learn.ecommerce.api.controller.order;
 
 import com.learn.ecommerce.model.LocalUser;
 import com.learn.ecommerce.model.WebOrder;

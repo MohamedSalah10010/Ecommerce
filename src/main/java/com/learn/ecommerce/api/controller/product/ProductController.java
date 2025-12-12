@@ -1,4 +1,4 @@
-package com.learn.ecommerce.controller.product;
+package com.learn.ecommerce.api.controller.product;
 
 
 import com.learn.ecommerce.model.Product;
