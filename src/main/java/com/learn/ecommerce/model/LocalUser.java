@@ -1,12 +1,11 @@
 package com.learn.ecommerce.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.learn.ecommerce.api.model.VerificationToken;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 @Entity
 @Table(name = "local_user")

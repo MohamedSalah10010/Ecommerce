@@ -1,5 +1,6 @@
-package com.learn.ecommerce.model;
+package com.learn.ecommerce.api.model;
 
+import com.learn.ecommerce.model.LocalUser;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;

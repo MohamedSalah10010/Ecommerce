@@ -1,6 +1,6 @@
 package com.learn.ecommerce.services;
 
-import com.learn.ecommerce.model.VerificationToken;
+import com.learn.ecommerce.api.model.VerificationToken;
 import com.learn.ecommerce.repository.LocalUserRepo;
 import com.learn.ecommerce.api.model.LoginBody;
 import com.learn.ecommerce.api.model.RegistrationBody;

@@ -1,8 +1,7 @@
 package com.learn.ecommerce.services;
 
-import com.auth0.jwt.interfaces.Verification;
 import com.learn.ecommerce.exception.EmailFailureException;
-import com.learn.ecommerce.model.VerificationToken;
+import com.learn.ecommerce.api.model.VerificationToken;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
