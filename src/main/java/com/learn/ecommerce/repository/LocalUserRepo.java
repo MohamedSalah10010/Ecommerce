@@ -10,4 +10,7 @@ public interface LocalUserRepo extends CrudRepository<LocalUser,Long> {
     Optional<LocalUser> findByUserNameIgnoreCase(String userName);
 
     Optional<LocalUser> findByEmailIgnoreCase(String email);
+
+    Optional<LocalUser> findByVerificationTokens_Token(String token);
+
 }

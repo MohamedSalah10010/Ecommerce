@@ -35,11 +35,22 @@ public class LocalUser {
     @JsonIgnore
     private Collection<Address> addresses = new ArrayList<>();
 
-    @OneToMany(mappedBy = "localUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Collection<VerificationToken> verificationTokens = new ArrayList<>();
 
-    @Column(name = "is_enabled", nullable = false)
+    @Column(name = "is_enabled", nullable = false,columnDefinition = "BIT DEFAULT 0")
     private Boolean isEnabled = false;
+
+    @Column(name = "is_verified", nullable = false,columnDefinition = "BIT DEFAULT 0")
+    private Boolean isVerified = false;
+
+    public Boolean getIsVerified() {
+        return isVerified;
+    }
+
+    public void setIsVerified(Boolean isVerified) {
+        this.isVerified = isVerified;
+    }
 
     public Boolean getIsEnabled() {
         return isEnabled;

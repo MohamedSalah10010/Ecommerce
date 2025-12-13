@@ -1,11 +1,11 @@
 package com.learn.ecommerce.api.controller.auth;
 
-import com.learn.ecommerce.repository.LocalUserRepo;
 import com.learn.ecommerce.api.model.LoginBody;
 import com.learn.ecommerce.api.model.LoginResponse;
 import com.learn.ecommerce.api.model.RegistrationBody;
 import com.learn.ecommerce.exception.UserAlreadyExistsException;
 import com.learn.ecommerce.model.LocalUser;
+import com.learn.ecommerce.repository.LocalUserRepo;
 import com.learn.ecommerce.services.JwtService;
 import com.learn.ecommerce.services.UserService;
 import jakarta.validation.Valid;
@@ -60,4 +60,14 @@ public class AuthenticationController {
         return user;
     }
 
+    @GetMapping("/verify")
+    public ResponseEntity verifyUserEmail(@RequestParam("token") String token)
+    {
+        boolean verified = userService.verifyUserEmail(token);
+        if(verified) {
+            return ResponseEntity.ok().body("Account is verified successfully!!");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
 }

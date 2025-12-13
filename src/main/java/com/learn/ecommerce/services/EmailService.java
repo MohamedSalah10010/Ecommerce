@@ -1,7 +1,7 @@
 package com.learn.ecommerce.services;
 
-import com.learn.ecommerce.exception.EmailFailureException;
 import com.learn.ecommerce.api.model.VerificationToken;
+import com.learn.ecommerce.exception.EmailFailureException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
@@ -12,15 +12,17 @@ import org.springframework.stereotype.Service;
 public class EmailService {
 
     private final JavaMailSender javaMailSender;
+    private JavaMailSender mailSender;
+
+
     @Value("${spring.mail.username}")
     private String fromAddress;
 
     @Value("${app.url}")
     private String url;
 
-    private JavaMailSender mailSender;
 
-
+    // constructor
     public EmailService(JavaMailSender mailSender, JavaMailSender javaMailSender) {
         this.mailSender = mailSender;
         this.javaMailSender = javaMailSender;

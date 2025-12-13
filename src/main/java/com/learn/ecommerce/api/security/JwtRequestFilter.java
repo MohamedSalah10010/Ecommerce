@@ -1,8 +1,8 @@
 package com.learn.ecommerce.api.security;
 
 import com.auth0.jwt.exceptions.JWTDecodeException;
-import com.learn.ecommerce.repository.LocalUserRepo;
 import com.learn.ecommerce.model.LocalUser;
+import com.learn.ecommerce.repository.LocalUserRepo;
 import com.learn.ecommerce.services.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -38,7 +38,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
 
         // Skip JWT filter for login & register
-        if ("/auth/login".equals(path) || "/auth/register".equals(path)) {
+        if ("/auth/login".equals(path) || "/auth/register".equals(path) || path.startsWith("/auth/verify")) {
             filterchain.doFilter(request, response);
             return;
         }
