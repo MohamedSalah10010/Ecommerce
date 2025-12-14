@@ -36,6 +36,7 @@ public class LocalUser {
     private Collection<Address> addresses = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("id DESC")
     private Collection<VerificationToken> verificationTokens = new ArrayList<>();
 
     @Column(name = "is_enabled", nullable = false,columnDefinition = "BIT DEFAULT 0")

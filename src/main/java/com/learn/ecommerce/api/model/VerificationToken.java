@@ -2,7 +2,9 @@ package com.learn.ecommerce.api.model;
 
 import com.learn.ecommerce.model.LocalUser;
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 @Entity
@@ -23,6 +25,18 @@ public class VerificationToken {
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private LocalUser user;
+
+    @CreationTimestamp
+    @Column(name = "created_at_time_stamp", nullable = false)
+    private Timestamp createdAtTimeStamp;
+
+    public Timestamp getCreatedAtTimeStamp() {
+        return createdAtTimeStamp;
+    }
+
+    public void setCreatedAtTimeStamp(Timestamp createdAtTimeStamp) {
+        this.createdAtTimeStamp = createdAtTimeStamp;
+    }
 
     public LocalUser getUser() {
         return user;

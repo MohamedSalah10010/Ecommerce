@@ -4,12 +4,15 @@ import com.learn.ecommerce.api.model.LoginBody;
 import com.learn.ecommerce.api.model.RegistrationBody;
 import com.learn.ecommerce.api.model.VerificationToken;
 import com.learn.ecommerce.exception.UserAlreadyExistsException;
+import com.learn.ecommerce.exception.UserIsNotVerifiedException;
 import com.learn.ecommerce.model.LocalUser;
 import com.learn.ecommerce.repository.LocalUserRepo;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -64,17 +67,37 @@ public class UserService {
 
     }
 
-    public String loginUser(LoginBody body) {
+    public String loginUser(LoginBody body) throws UserIsNotVerifiedException {
         Optional<LocalUser> opUser = userRepository.findByUserNameIgnoreCase(body.getUsername());
-        if(opUser.isPresent())
+        if(opUser.isPresent() )
         {
             LocalUser user = opUser.get();
             if (encryptionService.checkPassword(body.getPassword(), user.getPassword()))
             {
-               return jwtService.generateToken(user);
+                if(user.getIsVerified())
+                {
+                    return jwtService.generateToken(user);
+                }
+                else
+                {
+                    List<VerificationToken> tokens = (List) user.getVerificationTokens();
+                    boolean resend = tokens.size() == 0 ||
+                            tokens.get(0).getCreatedAtTimeStamp().before(new Timestamp(System.currentTimeMillis()-(60*60*1000)));
+                    if(resend)
+                    {
+                        VerificationToken verificationToken = createVerificationToken(user);
+                        emailService.sendVerficationEmail(verificationToken);
+                        user.getVerificationTokens().add(verificationToken);
+                        userRepository.save(user);
+                    }
+                    throw new UserIsNotVerifiedException("User email is not verified.", resend );
+                }
+
             }
+
         }
-            return null;
+
+        return null;
     }
 
     public boolean verifyUserEmail(String token) {

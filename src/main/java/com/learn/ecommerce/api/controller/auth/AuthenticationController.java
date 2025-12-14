@@ -3,7 +3,9 @@ package com.learn.ecommerce.api.controller.auth;
 import com.learn.ecommerce.api.model.LoginBody;
 import com.learn.ecommerce.api.model.LoginResponse;
 import com.learn.ecommerce.api.model.RegistrationBody;
+import com.learn.ecommerce.exception.EmailFailureException;
 import com.learn.ecommerce.exception.UserAlreadyExistsException;
+import com.learn.ecommerce.exception.UserIsNotVerifiedException;
 import com.learn.ecommerce.model.LocalUser;
 import com.learn.ecommerce.repository.LocalUserRepo;
 import com.learn.ecommerce.services.JwtService;
@@ -36,8 +38,10 @@ public class AuthenticationController {
         try {
             userService.registerUser(registrationBody);
             return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (UserAlreadyExistsException e) {
+        } catch (UserAlreadyExistsException ex) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }catch (EmailFailureException ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
 
     }
@@ -45,13 +49,41 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginBody loginBody)
     {
-        String jwt = userService.loginUser(loginBody);
+        String jwt = null;
+        try {
+             jwt = userService.loginUser(loginBody);
+        }catch (UserIsNotVerifiedException ex)
+        {
+            LoginResponse loginResponse = new LoginResponse();
+            String reason = "Email is not verified. Please verify your email to login.";
+            if(ex.isEmailSent())
+            {
+                reason += " A new verification email has been sent to your email address.";
+            }
+            else{
+                reason += " Failed to send verification email. Please try resending verification email.";
+            }
+            loginResponse.setFailureMessage(reason);
+            loginResponse.setSuccess(false);
+            loginResponse.setJwt(null);
+
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(loginResponse);
+
+        }
+        catch (EmailFailureException ex)
+        {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
         if (jwt == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        else{
         LoginResponse response = new LoginResponse();
         response.setJwt(jwt);
+        response.setSuccess(true);
         return ResponseEntity.ok(response);
+        }
     }
 
     @GetMapping("/me")
