@@ -9,6 +9,7 @@ import com.learn.ecommerce.model.LocalUser;
 import com.learn.ecommerce.repository.LocalUserRepo;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -25,7 +26,8 @@ public class UserService {
 
     public UserService(LocalUserRepo userRepository,
                        EncryptionService encryptionService,
-                       JwtService jwtService, EmailService emailService) {
+                       JwtService jwtService, EmailService emailService)
+    {
         this.userRepository = userRepository;
         this.encryptionService = encryptionService;
         this.jwtService = jwtService;
@@ -100,6 +102,7 @@ public class UserService {
         return null;
     }
 
+    @Transactional
     public boolean verifyUserEmail(String token) {
         Optional<LocalUser> opUser = userRepository.findByVerificationTokens_Token(token);
         if(opUser.isPresent())
@@ -113,7 +116,13 @@ public class UserService {
                 VerificationToken verificationToken = opToken.get();
                 if(verificationToken.getExpiryDate().isAfter(LocalDateTime.now()))
                 {
-                    user.setIsVerified(true);
+                    if(!user.getIsVerified())
+                    {
+                        user.setIsVerified(true);
+                    }
+
+
+                    user.getVerificationTokens().remove(verificationToken);
                     userRepository.save(user);
                     return true;
                 }

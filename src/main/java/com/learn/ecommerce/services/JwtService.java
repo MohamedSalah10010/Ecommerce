@@ -48,6 +48,6 @@ public class JwtService {
     public String getUsername(String token) {
 
         DecodedJWT jwtDecoded = JWT.require(algorithm).withIssuer(issuer).build().verify(token);
-        return jwtDecoded.getClaim(USERNAME_KEY).asString();
+        return jwtDecoded .getClaim(USERNAME_KEY).asString();
     }
 }
