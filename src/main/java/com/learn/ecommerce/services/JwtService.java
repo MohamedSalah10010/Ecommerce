@@ -2,6 +2,7 @@ package com.learn.ecommerce.services;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.learn.ecommerce.model.LocalUser;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +46,8 @@ public class JwtService {
     }
 
     public String getUsername(String token) {
-        return JWT.decode(token).getClaim(USERNAME_KEY).asString();
+
+        DecodedJWT jwtDecoded = JWT.require(algorithm).withIssuer(issuer).build().verify(token);
+        return jwtDecoded.getClaim(USERNAME_KEY).asString();
     }
 }
