@@ -1,9 +1,8 @@
 package com.learn.ecommerce;
 
-import com.learn.ecommerce.model.*;
+import com.learn.ecommerce.entity.*;
 import com.learn.ecommerce.repository.*;
 import com.learn.ecommerce.services.EncryptionService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

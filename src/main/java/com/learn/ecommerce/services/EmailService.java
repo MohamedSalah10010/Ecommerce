@@ -1,7 +1,7 @@
 package com.learn.ecommerce.services;
 
-import com.learn.ecommerce.api.model.VerificationToken;
-import com.learn.ecommerce.exception.EmailFailureException;
+import com.learn.ecommerce.entity.VerificationToken;
+import com.learn.ecommerce.exceptionhandler.EmailFailureException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
@@ -47,6 +47,24 @@ public class EmailService {
 
         try {
             javaMailSender.send(message);
+        }catch (MailException e) {
+            throw new EmailFailureException("Email sending failed");
+        }
+
+    }
+
+    public void sendPasswordResetEmail(VerificationToken verificationToken)
+    {
+        SimpleMailMessage message = createSimpleMailMessage();
+
+        message.setTo(verificationToken.getUser().getEmail());
+        message.setSubject("Password Reset Request");
+        String body = "To reset your password, please click the following link:\n " +
+                url +"/auth/reset-password?token=" + verificationToken.getToken();
+        message.setText(body);
+
+        try {
+            mailSender.send(message);
         }catch (MailException e) {
             throw new EmailFailureException("Email sending failed");
         }

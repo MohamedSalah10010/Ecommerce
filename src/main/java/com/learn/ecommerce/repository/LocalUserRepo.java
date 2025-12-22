@@ -1,7 +1,7 @@
 package com.learn.ecommerce.repository;
 
 
-import com.learn.ecommerce.model.LocalUser;
+import com.learn.ecommerce.entity.LocalUser;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.Optional;

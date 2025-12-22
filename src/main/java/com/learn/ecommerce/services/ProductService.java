@@ -1,6 +1,6 @@
 package com.learn.ecommerce.services;
 
-import com.learn.ecommerce.model.Product;
+import com.learn.ecommerce.entity.Product;
 import com.learn.ecommerce.repository.ProductRepo;
 import org.springframework.stereotype.Service;
 

@@ -1,7 +1,7 @@
 package com.learn.ecommerce.services;
 
-import com.learn.ecommerce.model.LocalUser;
-import com.learn.ecommerce.model.WebOrder;
+import com.learn.ecommerce.entity.LocalUser;
+import com.learn.ecommerce.entity.WebOrder;
 import com.learn.ecommerce.repository.WebOrderRepo;
 import org.springframework.stereotype.Service;
 
