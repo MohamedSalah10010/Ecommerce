@@ -3,15 +3,19 @@ package com.learn.ecommerce.services;
 import com.learn.ecommerce.DTO.UserRequestDTO.ForgetPasswordBodyDTO;
 import com.learn.ecommerce.DTO.UserRequestDTO.LoginBodyDTO;
 import com.learn.ecommerce.DTO.UserRequestDTO.RegistrationBodyDTO;
+import com.learn.ecommerce.DTO.UserResponseDTO.LoginResponseDTO;
+import com.learn.ecommerce.DTO.UserResponseDTO.UserDTO;
+import com.learn.ecommerce.entity.LocalUser;
 import com.learn.ecommerce.entity.VerificationToken;
 import com.learn.ecommerce.exceptionhandler.UserAlreadyExistsException;
 import com.learn.ecommerce.exceptionhandler.UserIsNotVerifiedException;
 import com.learn.ecommerce.exceptionhandler.UserNotFound;
-import com.learn.ecommerce.entity.LocalUser;
 import com.learn.ecommerce.repository.LocalUserRepo;
+import com.learn.ecommerce.utils.ObjectMapperUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.cfg.MapperBuilder;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -21,19 +25,21 @@ import java.util.Optional;
 @Service
 public class UserService {
 
+    private final MapperBuilder mapperBuilder;
     private LocalUserRepo userRepository;
     private EncryptionService encryptionService;
     private JwtService jwtService;
     private EmailService emailService;
+    private ObjectMapperUtils mapperUtils;
 
     public UserService(LocalUserRepo userRepository,
                        EncryptionService encryptionService,
-                       JwtService jwtService, EmailService emailService) {
+                       JwtService jwtService, EmailService emailService, MapperBuilder mapperBuilder) {
         this.userRepository = userRepository;
         this.encryptionService = encryptionService;
         this.jwtService = jwtService;
         this.emailService = emailService;
-
+        this.mapperBuilder = mapperBuilder;
     }
 
 
@@ -48,7 +54,7 @@ public class UserService {
     }
 
     @Transactional
-    public LocalUser registerUser(@NotNull RegistrationBodyDTO body) throws UserAlreadyExistsException {
+    public UserDTO registerUser(@NotNull RegistrationBodyDTO body) {
         if (userRepository.findByEmailIgnoreCase(body.getEmail()).isPresent()
                 || userRepository.findByUserNameIgnoreCase(body.getUsername()).isPresent()) {
             throw new UserAlreadyExistsException();
@@ -65,29 +71,51 @@ public class UserService {
         VerificationToken verificationToken = createVerificationToken(user);
         emailService.sendVerficationEmail(verificationToken);
         user.getVerificationTokens().add(verificationToken);
-        return userRepository.save(user);
+        userRepository.save(user);
+
+
+        return mapperUtils.map(user, UserDTO.class);
 
     }
 
-    public String loginUser(LoginBodyDTO body) throws UserIsNotVerifiedException {
+
+    public UserDTO getUserProfile(LocalUser user) {
+        Optional<LocalUser> opUser = userRepository.findById(user.getId());
+        if (opUser.isPresent()) {
+            LocalUser localUser = opUser.get();
+            return mapperUtils.map(localUser, UserDTO.class);
+        }
+
+        throw new UserNotFound();
+
+    }
+
+    public LoginResponseDTO loginUser(LoginBodyDTO body)  {
         Optional<LocalUser> opUser = userRepository.findByUserNameIgnoreCase(body.getUsername());
         if (opUser.isPresent()) {
             LocalUser user = opUser.get();
             if (encryptionService.checkPassword(body.getPassword(), user.getPassword())) {
                 if (user.getIsVerified()) {
-                    return jwtService.generateToken(user);
-                } else {
+                    return new LoginResponseDTO().builder()
+                            .jwt(jwtService.generateToken(user))
+                            .success(true)
+                            .failureMessage(null)
+                            .build();
+                }
+                else {
                     List<VerificationToken> tokens = (List) user.getVerificationTokens();
                     boolean resend = tokens.size() == 0 ||
-                            tokens.get(0).
-                                    getCreatedAtTimeStamp().before(new Timestamp(System.currentTimeMillis() - (60 * 60 * 1000)));
+                            tokens
+                                .get(0)
+                                .getCreatedAtTimeStamp()
+                                .before(new Timestamp(System.currentTimeMillis() - (60 * 60 * 1000)));
                     if (resend) {
                         VerificationToken verificationToken = createVerificationToken(user);
                         emailService.sendVerficationEmail(verificationToken);
                         user.getVerificationTokens().add(verificationToken);
                         userRepository.save(user);
                     }
-                    throw new UserIsNotVerifiedException("User email is not verified.", resend);
+                    throw new UserIsNotVerifiedException(resend);
                 }
 
             }
@@ -141,7 +169,7 @@ public class UserService {
                 emailService.sendPasswordResetEmail(verificationToken);
 
             } else {
-                throw new UserIsNotVerifiedException("User email is not verified.", false);
+                throw new UserIsNotVerifiedException(false);
             }
 
         } else {

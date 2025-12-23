@@ -1,4 +1,4 @@
 package com.learn.ecommerce.exceptionhandler;
 
-public class UserAlreadyExistsException extends Exception {
+public class UserAlreadyExistsException extends RuntimeException {
 }

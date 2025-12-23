@@ -70,16 +70,7 @@ public class LocalUser {
         this.verificationTokens = verificationTokens;
     }
 
-//    @OneToMany(mappedBy = "localUser", cascade = CascadeType.REMOVE, orphanRemoval = true)
-//    private Set<WebOrder> webOrders = new LinkedHashSet<>();
-//
-//    public Set<WebOrder> getWebOrders() {
-//        return webOrders;
-//    }
-//
-//    public void setWebOrders(Set<WebOrder> webOrders) {
-//        this.webOrders = webOrders;
-//    }
+
 
 
     public Collection<Address> getAddresses() {

@@ -1,8 +1,8 @@
 package com.learn.ecommerce.exceptionhandler;
 
-public class UserIsNotVerifiedException extends Exception {
-    public UserIsNotVerifiedException(String message, boolean emailSent) {
-        super(message);
+public class UserIsNotVerifiedException extends RuntimeException {
+    public UserIsNotVerifiedException( boolean emailSent) {
+
         this.emailSent = emailSent;
     }
 

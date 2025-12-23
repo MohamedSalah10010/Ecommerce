@@ -1,7 +1,14 @@
 package com.learn.ecommerce.DTO.UserRequestDTO;
 
 import jakarta.validation.constraints.*;
+import lombok.*;
 
+
+@Getter
+@Setter
+@AllArgsConstructor
+@RequiredArgsConstructor
+@Builder
 public class RegistrationBodyDTO {
 
     @NotBlank

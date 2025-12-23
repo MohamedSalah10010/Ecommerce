@@ -5,20 +5,24 @@ import com.learn.ecommerce.DTO.UserRequestDTO.LoginBodyDTO;
 import com.learn.ecommerce.DTO.UserRequestDTO.RegistrationBodyDTO;
 import com.learn.ecommerce.DTO.UserRequestDTO.ResetPasswordBodyDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.LoginResponseDTO;
+import com.learn.ecommerce.DTO.UserResponseDTO.UserDTO;
+import com.learn.ecommerce.entity.LocalUser;
 import com.learn.ecommerce.exceptionhandler.EmailFailureException;
-import com.learn.ecommerce.exceptionhandler.UserAlreadyExistsException;
 import com.learn.ecommerce.exceptionhandler.UserIsNotVerifiedException;
 import com.learn.ecommerce.exceptionhandler.UserNotFound;
-import com.learn.ecommerce.entity.LocalUser;
 import com.learn.ecommerce.repository.LocalUserRepo;
 import com.learn.ecommerce.services.JwtService;
 import com.learn.ecommerce.services.UserService;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
+@AllArgsConstructor
 @RestController
 @RequestMapping("/auth")
 public class AuthenticationController {
@@ -35,64 +39,25 @@ public class AuthenticationController {
 
 
     @PostMapping("/register")
-    public ResponseEntity registerUser(@Valid @RequestBody RegistrationBodyDTO registrationBodyDTO)
+    public ResponseEntity<UserDTO> registerUser(@Valid @RequestBody RegistrationBodyDTO registrationBodyDTO)
     {
 
-        try {
-            userService.registerUser(registrationBodyDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (UserAlreadyExistsException ex) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }catch (EmailFailureException ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+            return new ResponseEntity<>(userService.registerUser(registrationBodyDTO), HttpStatus.CREATED);
 
     }
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginBodyDTO loginBodyDTO)
     {
-        String jwt = null;
-        try {
-             jwt = userService.loginUser(loginBodyDTO);
-        }catch (UserIsNotVerifiedException ex)
-        {
-            LoginResponseDTO loginResponse = new LoginResponseDTO();
-            String reason = "Email is not verified. Please verify your email to login.";
-            if(ex.isEmailSent())
-            {
-                reason += " A new verification email has been sent to your email address.";
-            }
-            else{
-                reason += " Failed to send verification email. Please try resending verification email.";
-            }
-            loginResponse.setFailureMessage(reason);
-            loginResponse.setSuccess(false);
-            loginResponse.setJwt(null);
 
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(loginResponse);
+        return new ResponseEntity<LoginResponseDTO>(userService.loginUser(loginBodyDTO), HttpStatus.OK);
 
-        }
-        catch (EmailFailureException ex)
-        {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-
-        if (jwt == null){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        else{
-        LoginResponseDTO response = new LoginResponseDTO();
-        response.setJwt(jwt);
-        response.setSuccess(true);
-        return ResponseEntity.ok(response);
-        }
     }
 
     @GetMapping("/me")
-    public LocalUser getLoggedInUserProfile(@AuthenticationPrincipal LocalUser user)
+    public UserDTO getLoggedInUserProfile(@AuthenticationPrincipal LocalUser user)
     {
-        return user;
+        return userService.getUserProfile(user);
     }
 
     @GetMapping("/verify")
