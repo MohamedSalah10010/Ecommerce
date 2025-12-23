@@ -19,10 +19,22 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http)  throws Exception {
             http
+                .formLogin(form->form.disable())
+                .httpBasic(basic->basic.disable())
                 .csrf(csrf->csrf.disable())
                 .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authRequest->
-                        authRequest.requestMatchers("/auth/login","/auth/verify","/auth/reset-password","/auth/forgot-password", "/auth/register","/products")
+                        authRequest.requestMatchers(
+                                 "/auth/login"
+                                ,"/auth/verify"
+                                ,"/auth/reset-password"
+                                ,"/auth/forgot-password"
+                                , "/auth/register"
+                                ,"/products"
+                                ,"/swagger-ui/**"
+                                ,"/v3/api-docs/**")
+
+
                                 .permitAll()
                                 .anyRequest().authenticated())
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);

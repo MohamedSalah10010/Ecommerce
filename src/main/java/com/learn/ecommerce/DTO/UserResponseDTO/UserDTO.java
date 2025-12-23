@@ -2,37 +2,49 @@ package com.learn.ecommerce.DTO.UserResponseDTO;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.learn.ecommerce.entity.Address;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import java.util.Collection;
 
+@Schema(description = "User profile information")
 @Builder
 @Getter
 @Setter
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class UserDTO {
+
+    @Schema(example = "1")
     private Long id;
 
-    @JsonProperty( "userName")
+    @JsonProperty("userName")
+    @Schema(example = "john_doe")
     private String userName;
 
-
-    @JsonProperty( "email")
+    @JsonProperty("email")
+    @Schema(example = "john.doe@example.com")
     private String email;
 
-    @JsonProperty( "first_name")
+    @JsonProperty("first_name")
+    @Schema(example = "John")
     private String firstName;
 
     @JsonProperty("last_name")
+    @Schema(example = "Doe")
     private String lastName;
 
-    private Collection<Address> addresses ;
+    @Schema(
+            description = "List of user addresses",
+            nullable = true
+    )
+    private Collection<Address> addresses;
 
     @JsonProperty("is_enabled")
-    private Boolean isEnabled ;
+    @Schema(example = "true")
+    private Boolean isEnabled;
 
     @JsonProperty("is_verified")
-    private Boolean isVerified ;
-
+    @Schema(example = "true")
+    private Boolean isVerified;
 }

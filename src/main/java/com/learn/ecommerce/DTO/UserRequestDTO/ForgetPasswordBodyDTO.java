@@ -1,8 +1,10 @@
 package com.learn.ecommerce.DTO.UserRequestDTO;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 
+@Schema(description = "Forgot password request payload")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -11,20 +13,18 @@ import lombok.*;
 public class ForgetPasswordBodyDTO {
 
     @NotEmpty
+    @Schema(
+            description = "User email address",
+            example = "john.doe@example.com",
+            requiredMode = Schema.RequiredMode.REQUIRED
+    )
     private String email;
-    @NotEmpty
-    private  String username;
 
-    public String getUsername() {
-        return username;
-    }
-    public void setUsername(String username) {
-        this.username = username;
-    }
-    public String getEmail() {
-        return email;
-    }
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    @NotEmpty
+    @Schema(
+            description = "Username associated with the account",
+            example = "john_doe",
+            requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    private String username;
 }

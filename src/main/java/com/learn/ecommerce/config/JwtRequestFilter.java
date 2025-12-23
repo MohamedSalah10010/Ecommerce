@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 
+
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
@@ -38,7 +39,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
 
         // Skip JWT filter for login & register
-        if ("/auth/login".equals(path) || "/auth/register".equals(path) || path.startsWith("/auth/verify") || path.startsWith("/auth/forgot-password") || path.startsWith("/auth/reset-password")) {
+        if ("/auth/login".equals(path)
+                || "/auth/register".equals(path)
+                || path.startsWith("/auth/verify")
+                || path.startsWith("/auth/forgot-password")
+                || path.startsWith("/auth/reset-password")
+                || "/products".equals(path)
+                || path.startsWith("/swagger-ui")
+                || path.startsWith("/v3/api-docs")
+        ) {
             filterchain.doFilter(request, response);
             return;
         }
