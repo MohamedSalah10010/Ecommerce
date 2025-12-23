@@ -1,6 +1,9 @@
 package com.learn.ecommerce.exceptionhandler;
 
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.learn.ecommerce.DTO.ErrorResponseDTO;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +14,10 @@ import org.springframework.web.context.request.WebRequest;
 import java.time.LocalDateTime;
 
 @Slf4j
+@Getter
+
+@Builder
+
 @ControllerAdvice
 
 public class GlobalExceptionHandler {
@@ -54,7 +61,7 @@ public class GlobalExceptionHandler {
                 .builder()
                 .errorStatus(HttpStatus.CONFLICT)
                 .errorDescription(request.getDescription(true))
-                .errorMessage(ex.getMessage())
+                .errorMessage("User with given email already exists")
                 .errorTimestamp(LocalDateTime.now())
                 .build(),HttpStatus.CONFLICT);
 
@@ -72,8 +79,8 @@ public class GlobalExceptionHandler {
                 .build(), HttpStatus.FORBIDDEN);
     }
 
-    @ExceptionHandler(UserNotFound.class)
-    public ResponseEntity<?> handleUserNotFoundException(UserNotFound ex, WebRequest request)
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<?> handleUserNotFoundException(UserNotFoundException ex, WebRequest request)
     {
         logError("User not found", ex);
         return new ResponseEntity<>(ErrorResponseDTO
@@ -83,6 +90,45 @@ public class GlobalExceptionHandler {
                 .errorMessage("User not found")
                 .errorTimestamp(LocalDateTime.now())
                 .build(),HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(TokenNotFoundException.class)
+    public ResponseEntity<?> handleTokenNotFoundException(TokenNotFoundException ex, WebRequest request)
+    {
+        logError("Token not found", ex);
+        return new ResponseEntity<>(ErrorResponseDTO
+                .builder()
+                .errorStatus(HttpStatus.NOT_FOUND)
+                .errorDescription(request.getDescription(true))
+                .errorMessage("Token not found ")
+                .errorTimestamp(LocalDateTime.now())
+                .build(),HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(TokenExpiredException.class)
+    public  ResponseEntity<?> handleTokenExpiredException(TokenExpiredException ex, WebRequest request)
+    {
+        logError("Token expired", ex);
+        return new ResponseEntity<>(ErrorResponseDTO
+                .builder()
+                .errorStatus(HttpStatus.UNAUTHORIZED)
+                .errorDescription(request.getDescription(true))
+                .errorMessage("Token has expired")
+                .errorTimestamp(LocalDateTime.now())
+                .build(),HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<?> handleInvalidCredentialsException(InvalidCredentialsException ex, WebRequest request)
+    {
+        logError("Invalid credentials", ex);
+        return new ResponseEntity<>(ErrorResponseDTO
+                .builder()
+                .errorStatus(HttpStatus.UNAUTHORIZED)
+                .errorDescription(request.getDescription(true))
+                .errorMessage("Invalid username or password")
+                .errorTimestamp(LocalDateTime.now())
+                .build(),HttpStatus.UNAUTHORIZED);
     }
 
     private void logError(String message, Exception ex) {

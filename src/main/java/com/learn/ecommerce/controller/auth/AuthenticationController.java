@@ -6,15 +6,12 @@ import com.learn.ecommerce.DTO.UserRequestDTO.RegistrationBodyDTO;
 import com.learn.ecommerce.DTO.UserRequestDTO.ResetPasswordBodyDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.LoginResponseDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.UserDTO;
+import com.learn.ecommerce.DTO.UserResponseDTO.UserStatusDTO;
 import com.learn.ecommerce.entity.LocalUser;
-import com.learn.ecommerce.exceptionhandler.EmailFailureException;
-import com.learn.ecommerce.exceptionhandler.UserIsNotVerifiedException;
-import com.learn.ecommerce.exceptionhandler.UserNotFound;
 import com.learn.ecommerce.repository.LocalUserRepo;
 import com.learn.ecommerce.services.JwtService;
 import com.learn.ecommerce.services.UserService;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +19,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
-@AllArgsConstructor
+
 @RestController
 @RequestMapping("/auth")
 public class AuthenticationController {
@@ -55,58 +52,31 @@ public class AuthenticationController {
     }
 
     @GetMapping("/me")
-    public UserDTO getLoggedInUserProfile(@AuthenticationPrincipal LocalUser user)
+    public ResponseEntity<UserDTO> getLoggedInUserProfile(@AuthenticationPrincipal LocalUser user)
     {
-        return userService.getUserProfile(user);
+        return new ResponseEntity<>( userService.getUserProfile(user), HttpStatus.OK);
     }
 
     @GetMapping("/verify")
-    public ResponseEntity verifyUserEmail(@RequestParam("token") String token)
+    public ResponseEntity<UserStatusDTO> verifyUserEmail(@RequestParam("token") String token)
     {
-        boolean verified = userService.verifyUserEmail(token);
-        if(verified) {
-            return ResponseEntity.ok().body("Account is verified successfully!!");
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
+        return new ResponseEntity<UserStatusDTO>( userService.verifyUserEmail(token),HttpStatus.OK);
+
     }
 
     @PostMapping("/forgot-password")
     public ResponseEntity forgotPassword(@Valid @RequestBody ForgetPasswordBodyDTO forgetPasswordBodyDTO)
     {
-        try
-        {
-            userService.initiatePasswordReset(forgetPasswordBodyDTO);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        }
-        catch (UserNotFound ex)
-        {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-        }
-        catch (EmailFailureException ex)
-        {
-            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
-        }
-        catch (UserIsNotVerifiedException ex)
-        {
-            if (!ex.isEmailSent())
-            {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
-            }
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Verification email sent to your registered email address.");
-        }
 
+            userService.initiatePasswordReset(forgetPasswordBodyDTO);
+            return ResponseEntity.status(HttpStatus.OK).body("Password reset instructions have been sent to your email.");
 
     }
 
     @PostMapping ("/reset-password")
-    public ResponseEntity resetPassword(@Valid @RequestBody ResetPasswordBodyDTO resetPasswordBodyDTO)
+    public ResponseEntity<UserStatusDTO> resetPassword(@Valid @RequestBody ResetPasswordBodyDTO resetPasswordBodyDTO)
     {
-        boolean reset = userService.resetPassword(resetPasswordBodyDTO.getNewPassword(), resetPasswordBodyDTO.getToken());
-        if (reset) {
-            return ResponseEntity.ok().body("Password has been reset successfully.");
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid or expired password reset token.");
-        }
+        return new ResponseEntity<UserStatusDTO>( userService.resetPassword(resetPasswordBodyDTO.getNewPassword(), resetPasswordBodyDTO.getToken()),HttpStatus.OK);
+
     }
 }

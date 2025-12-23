@@ -2,15 +2,15 @@ package com.learn.ecommerce.exceptionhandler;
 
 
 import com.learn.ecommerce.DTO.ErrorResponseDTO;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @Builder
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Getter
+@AllArgsConstructor
+@Setter
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
 public class ApplicationException extends RuntimeException {
 

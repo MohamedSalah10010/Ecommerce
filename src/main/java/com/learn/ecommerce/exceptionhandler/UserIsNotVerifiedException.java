@@ -1,14 +1,20 @@
 package com.learn.ecommerce.exceptionhandler;
 
-public class UserIsNotVerifiedException extends RuntimeException {
-    public UserIsNotVerifiedException( boolean emailSent) {
+import lombok.*;
 
-        this.emailSent = emailSent;
-    }
+@Getter
+@Setter
+@AllArgsConstructor
+@RequiredArgsConstructor
+@Builder
+public class UserIsNotVerifiedException extends RuntimeException {
+
 
 
     private boolean emailSent;
-    public boolean isEmailSent() {
+
+    public boolean isEmailSent()
+    {
         return emailSent;
     }
 

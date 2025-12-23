@@ -1,23 +1,22 @@
 package com.learn.ecommerce.services;
 
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.learn.ecommerce.DTO.UserRequestDTO.ForgetPasswordBodyDTO;
 import com.learn.ecommerce.DTO.UserRequestDTO.LoginBodyDTO;
 import com.learn.ecommerce.DTO.UserRequestDTO.RegistrationBodyDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.LoginResponseDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.UserDTO;
+import com.learn.ecommerce.DTO.UserResponseDTO.UserStatusDTO;
 import com.learn.ecommerce.entity.LocalUser;
 import com.learn.ecommerce.entity.VerificationToken;
-import com.learn.ecommerce.exceptionhandler.UserAlreadyExistsException;
-import com.learn.ecommerce.exceptionhandler.UserIsNotVerifiedException;
-import com.learn.ecommerce.exceptionhandler.UserNotFound;
+import com.learn.ecommerce.exceptionhandler.*;
 import com.learn.ecommerce.repository.LocalUserRepo;
 import com.learn.ecommerce.utils.ObjectMapperUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.cfg.MapperBuilder;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -25,21 +24,21 @@ import java.util.Optional;
 @Service
 public class UserService {
 
-    private final MapperBuilder mapperBuilder;
+
     private LocalUserRepo userRepository;
     private EncryptionService encryptionService;
     private JwtService jwtService;
     private EmailService emailService;
-    private ObjectMapperUtils mapperUtils;
+
 
     public UserService(LocalUserRepo userRepository,
                        EncryptionService encryptionService,
-                       JwtService jwtService, EmailService emailService, MapperBuilder mapperBuilder) {
+                       JwtService jwtService, EmailService emailServicer) {
         this.userRepository = userRepository;
         this.encryptionService = encryptionService;
         this.jwtService = jwtService;
         this.emailService = emailService;
-        this.mapperBuilder = mapperBuilder;
+
     }
 
 
@@ -47,7 +46,7 @@ public class UserService {
         String token = jwtService.generateVerificationToken(user);
         VerificationToken verificationToken = new VerificationToken();
         verificationToken.setToken(token);
-        verificationToken.setExpiryDate(LocalDateTime.now().plusHours(24)); // 24 hours
+        verificationToken.setExpiryDate(LocalDateTime.now().plusHours(12)); // 12 hours
         verificationToken.setUser(user);
 
         return verificationToken;
@@ -74,7 +73,7 @@ public class UserService {
         userRepository.save(user);
 
 
-        return mapperUtils.map(user, UserDTO.class);
+        return ObjectMapperUtils.map(user, UserDTO.class);
 
     }
 
@@ -83,10 +82,10 @@ public class UserService {
         Optional<LocalUser> opUser = userRepository.findById(user.getId());
         if (opUser.isPresent()) {
             LocalUser localUser = opUser.get();
-            return mapperUtils.map(localUser, UserDTO.class);
+            return ObjectMapperUtils.map(localUser, UserDTO.class);
         }
 
-        throw new UserNotFound();
+        throw new UserNotFoundException();
 
     }
 
@@ -103,61 +102,72 @@ public class UserService {
                             .build();
                 }
                 else {
-                    List<VerificationToken> tokens = (List) user.getVerificationTokens();
-                    boolean resend = tokens.size() == 0 ||
-                            tokens
-                                .get(0)
-                                .getCreatedAtTimeStamp()
-                                .before(new Timestamp(System.currentTimeMillis() - (60 * 60 * 1000)));
-                    if (resend) {
-                        VerificationToken verificationToken = createVerificationToken(user);
-                        emailService.sendVerficationEmail(verificationToken);
-                        user.getVerificationTokens().add(verificationToken);
-                        userRepository.save(user);
-                    }
-                    throw new UserIsNotVerifiedException(resend);
+//                    List<VerificationToken> tokens = (List) user.getVerificationTokens();
+//                    boolean resend = tokens.size() == 0 ||
+//                            tokens
+//                                .get(0)
+//                                .getCreatedAtTimeStamp()
+//                                .before(new Timestamp(System.currentTimeMillis() - (60 * 60 * 1000)));
+//                    if (resend) {
+//                        VerificationToken verificationToken = createVerificationToken(user);
+//                        emailService.sendVerficationEmail(verificationToken);
+//                        user.getVerificationTokens().add(verificationToken);
+//                        userRepository.save(user);
+//                    }
+                    throw new UserIsNotVerifiedException();
                 }
 
             }
 
+            throw new InvalidCredentialsException();
         }
 
-        return null;
+        throw new UserNotFoundException();
+
     }
 
     @Transactional
-    public boolean verifyUserEmail(String token) {
+    public UserStatusDTO verifyUserEmail(String token) {
         Optional<LocalUser> opUser = userRepository.findByVerificationTokens_Token(token);
         if (opUser.isPresent()) {
             LocalUser user = opUser.get();
             Optional<VerificationToken> opToken = user.getVerificationTokens().stream()
                     .filter(t -> t.getToken().equals(token))
                     .findFirst();
-            if (opToken.isPresent()) {
+            if (opToken.isPresent())
+            {
                 VerificationToken verificationToken = opToken.get();
                 if (verificationToken.getExpiryDate().isAfter(LocalDateTime.now())) {
                     if (!user.getIsVerified()) {
                         user.setIsVerified(true);
+                        user.setIsEnabled(true);
                     }
-
 
                     user.getVerificationTokens().remove(verificationToken);
                     userRepository.save(user);
-                    return true;
+                    return new UserStatusDTO()
+                            .builder()
+                            .email(user.getEmail())
+                            .isVerified(true)
+                            .isEnabled(true)
+                            .build();
                 }
+                throw new TokenExpiredException("Token has expired", Instant.now());
             }
+            throw new TokenNotFoundException();
         }
-        return false;
+        throw new UserNotFoundException();
     }
 
 
     @Transactional
-    public void initiatePasswordReset(ForgetPasswordBodyDTO body) throws UserIsNotVerifiedException, UserNotFound {
+    public void initiatePasswordReset(ForgetPasswordBodyDTO body) {
         Optional<LocalUser> opUser = userRepository.findByUserNameIgnoreCase(body.getUsername());
         if (opUser.isPresent() && opUser.get().getEmail().equals(body.getEmail())) {
 
             LocalUser user = opUser.get();
-            if (user.getIsVerified()) {
+            if (user.getIsVerified())
+            {
                 String token = jwtService.generatePasswordResetToken(user);
                 VerificationToken verificationToken = new VerificationToken();
                 verificationToken.setToken(token);
@@ -168,19 +178,19 @@ public class UserService {
 
                 emailService.sendPasswordResetEmail(verificationToken);
 
-            } else {
-                throw new UserIsNotVerifiedException(false);
             }
+            throw new UserIsNotVerifiedException();
 
-        } else {
-            throw new UserNotFound("User not found or email does not match.");
         }
+
+        throw new UserNotFoundException();
+
 
 
     }
 
     @Transactional
-    public boolean resetPassword(String newPassword, String token) throws UserNotFound {
+    public UserStatusDTO resetPassword(String newPassword, String token) throws UserNotFoundException {
 //        String userEmail = jwtService.getPasswordResetEmail(token);
 //        Optional<LocalUser> opUser = userRepository.findByEmailIgnoreCase(userEmail);
         Optional<LocalUser> opUser = userRepository.findByVerificationTokens_Token(token);
@@ -198,13 +208,23 @@ public class UserService {
                     user.setPassword(encryptionService.encryptPassword(newPassword));
                     user.getVerificationTokens().remove(verificationToken);
                     userRepository.save(user);
-                    return true;
+                    return new  UserStatusDTO()
+                            .builder()
+                            .passwordChangedSuccess(true)
+                            .statusMessage("Password changed successfully.")
+                            .build();
                 }
+
+                throw new TokenExpiredException("Token has expired", Instant.now());
+
+
             }
-        } else {
-            throw new UserNotFound("Invalid password reset token.");
+            throw new TokenNotFoundException();
         }
-        return false;
+
+        throw new UserNotFoundException();
+
+
     }
 
 }
