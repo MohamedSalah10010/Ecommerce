@@ -12,14 +12,20 @@ import com.learn.ecommerce.entity.VerificationToken;
 import com.learn.ecommerce.exceptionhandler.*;
 import com.learn.ecommerce.repository.LocalUserRepo;
 import com.learn.ecommerce.utils.ObjectMapperUtils;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
+@Getter
+@Setter
+@AllArgsConstructor
 
 @Service
 public class UserService {
@@ -31,22 +37,14 @@ public class UserService {
     private EmailService emailService;
 
 
-    public UserService(LocalUserRepo userRepository,
-                       EncryptionService encryptionService,
-                       JwtService jwtService, EmailService emailServicer) {
-        this.userRepository = userRepository;
-        this.encryptionService = encryptionService;
-        this.jwtService = jwtService;
-        this.emailService = emailService;
 
-    }
 
 
     private VerificationToken createVerificationToken(LocalUser user) {
         String token = jwtService.generateVerificationToken(user);
         VerificationToken verificationToken = new VerificationToken();
         verificationToken.setToken(token);
-        verificationToken.setExpiryDate(LocalDateTime.now().plusHours(12)); // 12 hours
+        verificationToken.setExpiryDate(Instant.now().plusSeconds(60*60*12)); // 12 hours
         verificationToken.setUser(user);
 
         return verificationToken;
@@ -137,7 +135,7 @@ public class UserService {
             if (opToken.isPresent())
             {
                 VerificationToken verificationToken = opToken.get();
-                if (verificationToken.getExpiryDate().isAfter(LocalDateTime.now())) {
+                if (verificationToken.getExpiryDate().isAfter(Instant.now())) {
                     if (!user.getIsVerified()) {
                         user.setIsVerified(true);
                         user.setIsEnabled(true);
@@ -171,7 +169,7 @@ public class UserService {
                 String token = jwtService.generatePasswordResetToken(user);
                 VerificationToken verificationToken = new VerificationToken();
                 verificationToken.setToken(token);
-                verificationToken.setExpiryDate(LocalDateTime.now().plusMinutes(30)); //30 minutes
+                verificationToken.setExpiryDate(Instant.now().plusSeconds(60*60*30)); //30 minutes
                 verificationToken.setUser(user);
                 user.getVerificationTokens().add(verificationToken);
                 userRepository.save(user);
@@ -204,7 +202,7 @@ public class UserService {
                     .findFirst();
             if (opToken.isPresent()) {
                 VerificationToken verificationToken = opToken.get();
-                if (verificationToken.getExpiryDate().isAfter(LocalDateTime.now())) {
+                if (verificationToken.getExpiryDate().isAfter(Instant.now())) {
                     user.setPassword(encryptionService.encryptPassword(newPassword));
                     user.getVerificationTokens().remove(verificationToken);
                     userRepository.save(user);

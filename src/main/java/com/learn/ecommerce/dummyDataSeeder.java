@@ -159,12 +159,12 @@ public class dummyDataSeeder {
             // =====================================
 
             WebOrder order1 = new WebOrder();
-            order1.setLocalUser(u1); // note: your setter is setLocalUser
+            order1.setUser(u1); // note: your setter is setLocalUser
             order1.setAddress(a1);
             orderRepo.save(order1);
 
             WebOrder order2 = new WebOrder();
-            order2.setLocalUser(u2);
+            order2.setUser(u2);
             order2.setAddress(a2);
             orderRepo.save(order2);
 

@@ -1,4 +1,4 @@
-package com.learn.ecommerce.config;
+package com.learn.ecommerce.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,7 +29,7 @@ public class WebSecurityConfig {
                                 ,"/auth/verify"
                                 ,"/auth/reset-password"
                                 ,"/auth/forgot-password"
-                                , "/auth/register"
+
                                 ,"/products"
                                 ,"/swagger-ui/**"
                                 ,"/v3/api-docs/**")

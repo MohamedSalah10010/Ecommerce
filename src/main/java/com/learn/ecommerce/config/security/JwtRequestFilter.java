@@ -1,4 +1,4 @@
-package com.learn.ecommerce.config;
+package com.learn.ecommerce.config.security;
 
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.learn.ecommerce.entity.LocalUser;
@@ -40,7 +40,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         // Skip JWT filter for login & register
         if ("/auth/login".equals(path)
-                || "/auth/register".equals(path)
+
                 || path.startsWith("/auth/verify")
                 || path.startsWith("/auth/forgot-password")
                 || path.startsWith("/auth/reset-password")
