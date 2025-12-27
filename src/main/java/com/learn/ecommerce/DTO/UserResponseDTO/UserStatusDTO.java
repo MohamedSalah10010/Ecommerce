@@ -1,8 +1,11 @@
 package com.learn.ecommerce.DTO.UserResponseDTO;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+
+import java.time.Instant;
 
 @Schema(description = "User status response")
 @Getter
@@ -41,4 +44,13 @@ public class UserStatusDTO {
             example = "Password changed successfully"
     )
     private String statusMessage;
+
+
+    @JsonProperty("updated_at")
+    @Schema(example = "2023-10-02T12:34:56Z")
+    private Instant updatedAt;
+
+    @JsonProperty("updated_by")
+    @Schema(example = "user")
+    private String updatedBy;
 }

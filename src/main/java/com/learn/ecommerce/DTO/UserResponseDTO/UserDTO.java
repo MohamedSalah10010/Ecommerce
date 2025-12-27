@@ -5,6 +5,7 @@ import com.learn.ecommerce.entity.Address;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import java.time.Instant;
 import java.util.Collection;
 
 @Schema(description = "User profile information")
@@ -47,4 +48,21 @@ public class UserDTO {
     @JsonProperty("is_verified")
     @Schema(example = "true")
     private Boolean isVerified;
+
+    @JsonProperty("created_at")
+    @Schema(example = "2023-10-01T12:34:56Z")
+    private Instant createdAt;
+
+    @JsonProperty("updated_at")
+    @Schema(example = "2023-10-02T12:34:56Z")
+    private Instant updatedAt;
+
+    @JsonProperty("created_by")
+    @Schema(example = "admin_user")
+    private String createdBy;
+
+    @JsonProperty("updated_by")
+    @Schema(example = "admin_user")
+    private String updatedBy;
+
 }
