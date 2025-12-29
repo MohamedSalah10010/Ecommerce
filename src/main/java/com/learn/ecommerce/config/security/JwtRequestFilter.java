@@ -47,6 +47,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 || "/products".equals(path)
                 || path.startsWith("/swagger-ui")
                 || path.startsWith("/v3/api-docs")
+                || path.startsWith("/auth/request-verify")
         ) {
             filterchain.doFilter(request, response);
             return;

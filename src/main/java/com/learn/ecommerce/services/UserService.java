@@ -4,6 +4,7 @@ import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.learn.ecommerce.DTO.UserRequestDTO.ForgetPasswordBodyDTO;
 import com.learn.ecommerce.DTO.UserRequestDTO.LoginBodyDTO;
 import com.learn.ecommerce.DTO.UserRequestDTO.RegistrationBodyDTO;
+import com.learn.ecommerce.DTO.UserRequestDTO.RequestEmailVerificationDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.LoginResponseDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.UserDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.UserStatusDTO;
@@ -93,7 +94,7 @@ public class UserService {
             LocalUser user = opUser.get();
             if (encryptionService.checkPassword(body.getPassword(), user.getPassword())) {
                 if (user.getIsVerified()) {
-                    return new LoginResponseDTO().builder()
+                    return  new LoginResponseDTO().builder()
                             .jwt(jwtService.generateToken(user))
                             .success(true)
                             .failureMessage(null)
@@ -157,6 +158,27 @@ public class UserService {
         throw new UserNotFoundException();
     }
 
+    @Transactional
+    public void requestEmailVerification( RequestEmailVerificationDTO body)
+    {
+        Optional<LocalUser> optionalUser= userRepository.findByUserNameIgnoreCase(body.getUsername());
+        if (optionalUser.isPresent())
+        {
+            LocalUser user = optionalUser.get();
+           if(user.getEmail().equals(body.getEmail()))
+               {
+
+                   VerificationToken verificationToken = createVerificationToken(optionalUser.get());
+                   emailService.sendVerficationEmail(verificationToken);
+                   user.getVerificationTokens().add(verificationToken);
+                   userRepository.save(user);
+                    return;
+               }
+           throw new EmailFailureException("Email not correct");
+        }
+        throw new UserNotFoundException();
+    }
+
 
     @Transactional
     public void initiatePasswordReset(ForgetPasswordBodyDTO body) {
@@ -175,7 +197,7 @@ public class UserService {
                 userRepository.save(user);
 
                 emailService.sendPasswordResetEmail(verificationToken);
-
+                return;
             }
             throw new UserIsNotVerifiedException();
 
@@ -194,7 +216,8 @@ public class UserService {
         Optional<LocalUser> opUser = userRepository.findByVerificationTokens_Token(token);
 
 
-        if (opUser.isPresent()) {
+        if (opUser.isPresent())
+        {
             LocalUser user = opUser.get();
             List<VerificationToken> tokens = (List) user.getVerificationTokens();
             Optional<VerificationToken> opToken = tokens.stream()

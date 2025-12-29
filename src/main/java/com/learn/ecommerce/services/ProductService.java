@@ -15,7 +15,7 @@ public class ProductService {
         this.productRepo = productRepo;
     }
 
-    public Collection<Product> getProducts()
+    public Collection<Product>  getProducts()
     {
         return (Collection<Product>) productRepo.findAll();
     }

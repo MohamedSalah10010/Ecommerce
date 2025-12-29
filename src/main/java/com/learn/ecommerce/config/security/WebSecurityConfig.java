@@ -29,7 +29,7 @@ public class WebSecurityConfig {
                                 ,"/auth/verify"
                                 ,"/auth/reset-password"
                                 ,"/auth/forgot-password"
-
+                                ,"/auth/request-verify"
                                 ,"/products"
                                 ,"/swagger-ui/**"
                                 ,"/v3/api-docs/**")

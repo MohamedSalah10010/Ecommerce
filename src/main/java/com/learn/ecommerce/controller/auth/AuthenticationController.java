@@ -1,10 +1,7 @@
 package com.learn.ecommerce.controller.auth;
 
 import com.learn.ecommerce.DTO.ErrorResponseDTO;
-import com.learn.ecommerce.DTO.UserRequestDTO.ForgetPasswordBodyDTO;
-import com.learn.ecommerce.DTO.UserRequestDTO.LoginBodyDTO;
-import com.learn.ecommerce.DTO.UserRequestDTO.RegistrationBodyDTO;
-import com.learn.ecommerce.DTO.UserRequestDTO.ResetPasswordBodyDTO;
+import com.learn.ecommerce.DTO.UserRequestDTO.*;
 import com.learn.ecommerce.DTO.UserResponseDTO.LoginResponseDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.UserDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.UserStatusDTO;
@@ -204,5 +201,12 @@ public class AuthenticationController {
     {
         return new ResponseEntity<UserStatusDTO>( userService.resetPassword(resetPasswordBodyDTO.getNewPassword(), resetPasswordBodyDTO.getToken()),HttpStatus.OK);
 
+    }
+
+    @PostMapping("/request-verify")
+    public ResponseEntity  requestEmailVerification(@Valid @RequestBody RequestEmailVerificationDTO body)
+    {
+        userService.requestEmailVerification(body);
+        return new ResponseEntity(HttpStatus.OK);
     }
 }
