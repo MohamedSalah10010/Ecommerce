@@ -51,7 +51,14 @@ public class LocalUser extends BaseAuditEntity{
     @Column(name = "is_verified", nullable = false,columnDefinition = "BIT DEFAULT 0")
     private Boolean isVerified = false;
 
+    @ManyToMany
+    @JoinTable(name = "local_user_userRoles",
+            joinColumns = @JoinColumn(name = "localUser_id"),
+            inverseJoinColumns = @JoinColumn(name = "userRoles_id"))
+    private Collection<UserRoles> userRoles = new ArrayList<>();
 
 
+    @Column(name = "phone_number", nullable = false, unique = true, length = 13)
+    private String phoneNumber;
 
 }

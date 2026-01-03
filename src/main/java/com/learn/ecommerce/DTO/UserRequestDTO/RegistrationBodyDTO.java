@@ -63,6 +63,13 @@ public class RegistrationBodyDTO {
             requiredMode = Schema.RequiredMode.REQUIRED
     )
     private String email;
+    @Pattern(regexp = "^\\+20\\s?(10|11|12|15)[0-9]{8}$\n", message = "Invalid phone number format")
+    @Schema(
+            description = "User phone number",
+            example = "+201123456789",
+            requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    private String phoneNumber;
 
     @Override
     public String toString() {

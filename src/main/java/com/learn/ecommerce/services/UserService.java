@@ -1,10 +1,7 @@
 package com.learn.ecommerce.services;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
-import com.learn.ecommerce.DTO.UserRequestDTO.ForgetPasswordBodyDTO;
-import com.learn.ecommerce.DTO.UserRequestDTO.LoginBodyDTO;
-import com.learn.ecommerce.DTO.UserRequestDTO.RegistrationBodyDTO;
-import com.learn.ecommerce.DTO.UserRequestDTO.RequestEmailVerificationDTO;
+import com.learn.ecommerce.DTO.UserRequestDTO.*;
 import com.learn.ecommerce.DTO.UserResponseDTO.LoginResponseDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.UserDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.UserStatusDTO;
@@ -246,6 +243,33 @@ public class UserService {
         throw new UserNotFoundException();
 
 
+    }
+
+    @Transactional
+    public UserStatusDTO updateUserProfile(Long userId, EditUserBody body) {
+        Optional<LocalUser> opUser = userRepository.findById(userId);
+        if (opUser.isPresent()) {
+            LocalUser localUser = opUser.get();
+
+            if(body.getEmail()!= null)
+                localUser.setEmail(body.getEmail());
+            if(body.getUsername()!= null)
+                localUser.setUserName(body.getUsername());
+           if (body.getFirstName()!= null)
+                localUser.setFirstName(body.getFirstName());
+           if(body.getLastName()!= null)
+                localUser.setLastName(body.getLastName());
+           if(body.getPhoneNumber()!= null)
+                localUser.setPhoneNumber(body.getPhoneNumber());
+
+            userRepository.save(localUser);
+            return new UserStatusDTO()
+                    .builder()
+                    .statusMessage("Profile updated successfully.")
+                    .build();
+        }
+
+        throw new UserNotFoundException();
     }
 
 }

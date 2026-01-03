@@ -17,7 +17,7 @@ public class Inventory extends BaseAuditEntity{
     private Long id;
 
 
-    @OneToOne(optional = false, orphanRemoval = true)
+    @OneToOne(optional = false, cascade =  CascadeType.ALL)
     @JoinColumn(name = "product_id", nullable = false, unique = true)
     private Product product;
 

@@ -209,4 +209,10 @@ public class AuthenticationController {
         userService.requestEmailVerification(body);
         return new ResponseEntity(HttpStatus.OK);
     }
+
+    @PutMapping("/update/{userId}")
+    public  ResponseEntity<UserStatusDTO> updateUser(@PathVariable Long userId,@Valid @RequestBody EditUserBody body)
+    {
+        return new ResponseEntity<UserStatusDTO>( userService.updateUserProfile(userId, body), HttpStatus.OK);
+    }
 }

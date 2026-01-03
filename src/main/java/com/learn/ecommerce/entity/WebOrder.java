@@ -28,7 +28,7 @@ public class WebOrder extends BaseAuditEntity{
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 
-    @OneToMany(mappedBy = "webOrder", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "webOrder", cascade = CascadeType.ALL, orphanRemoval = true)
     private Collection<OrderQuantities> orderQuantities = new ArrayList<>();
 
     public Collection<OrderQuantities> getOrderQuantities() {
