@@ -3,12 +3,15 @@ package com.learn.ecommerce.services;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.learn.ecommerce.DTO.UserRequestDTO.*;
 import com.learn.ecommerce.DTO.UserResponseDTO.LoginResponseDTO;
+import com.learn.ecommerce.DTO.UserResponseDTO.LogoutResponseDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.UserDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.UserStatusDTO;
 import com.learn.ecommerce.entity.LocalUser;
+import com.learn.ecommerce.entity.LoginTokens;
 import com.learn.ecommerce.entity.VerificationToken;
 import com.learn.ecommerce.exceptionhandler.*;
 import com.learn.ecommerce.repository.LocalUserRepo;
+import com.learn.ecommerce.repository.LoginTokensRepo;
 import com.learn.ecommerce.utils.ObjectMapperUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,6 +32,7 @@ import java.util.Optional;
 public class UserService {
 
 
+    private final LoginTokensRepo loginTokensRepo;
     private LocalUserRepo userRepository;
     private EncryptionService encryptionService;
     private JwtService jwtService;
@@ -91,28 +95,23 @@ public class UserService {
             LocalUser user = opUser.get();
             if (encryptionService.checkPassword(body.getPassword(), user.getPassword())) {
                 if (user.getIsVerified()) {
+                    LoginTokens loginToken = new LoginTokens();
+                    loginToken.setUser(user);
+                    loginToken.setToken(jwtService.generateToken(user));
+                    loginToken.setIssuedAt(Instant.now());
+                    loginToken.setExpiresAt(Instant.now().plusSeconds(jwtService.getExpiryInSeconds()));
+                    loginToken.setExpired(false);
+                    loginToken.setRevoked(false);
+                    loginTokensRepo.save(loginToken);
+
                     return  new LoginResponseDTO().builder()
-                            .jwt(jwtService.generateToken(user))
+                            .jwt(loginToken.getToken())
                             .success(true)
                             .failureMessage(null)
                             .build();
                 }
-                else {
-//                    List<VerificationToken> tokens = (List) user.getVerificationTokens();
-//                    boolean resend = tokens.size() == 0 ||
-//                            tokens
-//                                .get(0)
-//                                .getCreatedAtTimeStamp()
-//                                .before(new Timestamp(System.currentTimeMillis() - (60 * 60 * 1000)));
-//                    if (resend) {
-//                        VerificationToken verificationToken = createVerificationToken(user);
-//                        emailService.sendVerficationEmail(verificationToken);
-//                        user.getVerificationTokens().add(verificationToken);
-//                        userRepository.save(user);
-//                    }
-                    throw new UserIsNotVerifiedException();
-                }
 
+                throw new UserIsNotVerifiedException();
             }
 
             throw new InvalidCredentialsException();
@@ -156,8 +155,7 @@ public class UserService {
     }
 
     @Transactional
-    public void requestEmailVerification( RequestEmailVerificationDTO body)
-    {
+    public void requestEmailVerification( RequestEmailVerificationDTO body){
         Optional<LocalUser> optionalUser= userRepository.findByUserNameIgnoreCase(body.getUsername());
         if (optionalUser.isPresent())
         {
@@ -207,7 +205,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserStatusDTO resetPassword(String newPassword, String token) throws UserNotFoundException {
+    public UserStatusDTO resetPassword(String newPassword, String token)  {
 //        String userEmail = jwtService.getPasswordResetEmail(token);
 //        Optional<LocalUser> opUser = userRepository.findByEmailIgnoreCase(userEmail);
         Optional<LocalUser> opUser = userRepository.findByVerificationTokens_Token(token);
@@ -272,4 +270,29 @@ public class UserService {
         throw new UserNotFoundException();
     }
 
+
+    @Transactional
+    public LogoutResponseDTO logoutUser(LocalUser user) {
+
+        List<LoginTokens> tokens = loginTokensRepo.findAllByUser(user);
+           if(!tokens.isEmpty())
+           {
+               for (LoginTokens token : tokens)
+               {
+                   token.setExpired(true);
+                   token.setRevoked(true);
+               }
+               // saveAll NOT required because of @Transactional
+               //loginTokensRepo.saveAll(tokens);
+               return new LogoutResponseDTO()
+                       .builder()
+                       .logoutMessage("User logged out successfully.")
+                       .build();
+           }
+
+           return new LogoutResponseDTO().builder()
+                     .logoutMessage("No active sessions found for the user.")
+                     .build();
+
+    }
 }

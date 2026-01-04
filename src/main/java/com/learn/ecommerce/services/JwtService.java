@@ -2,9 +2,11 @@ package com.learn.ecommerce.services;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.learn.ecommerce.entity.LocalUser;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +14,7 @@ import java.time.Instant;
 import java.util.Date;
 
 @Service
+@Getter
 public class JwtService {
     @Value("${jwt.algorithm.key}")
     private String algorithmKey;
@@ -84,5 +87,12 @@ public class JwtService {
 //
 //    return jwtDecoded.getClaim(PASSWORD_RESET_EMAIL_KEY).asString();
 //}
-
+public boolean isTokenExpired(String token) {
+    try {
+        Date expiresAt = JWT.decode(token).getExpiresAt();
+        return expiresAt == null || expiresAt.before(new Date());
+    } catch (JWTDecodeException e) {
+        return true; // invalid token = treat as expired
+    }
+}
 }

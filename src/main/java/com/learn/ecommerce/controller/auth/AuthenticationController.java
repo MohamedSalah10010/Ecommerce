@@ -3,6 +3,7 @@ package com.learn.ecommerce.controller.auth;
 import com.learn.ecommerce.DTO.ErrorResponseDTO;
 import com.learn.ecommerce.DTO.UserRequestDTO.*;
 import com.learn.ecommerce.DTO.UserResponseDTO.LoginResponseDTO;
+import com.learn.ecommerce.DTO.UserResponseDTO.LogoutResponseDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.UserDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.UserStatusDTO;
 import com.learn.ecommerce.entity.LocalUser;
@@ -214,5 +215,11 @@ public class AuthenticationController {
     public  ResponseEntity<UserStatusDTO> updateUser(@PathVariable Long userId,@Valid @RequestBody EditUserBody body)
     {
         return new ResponseEntity<UserStatusDTO>( userService.updateUserProfile(userId, body), HttpStatus.OK);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<LogoutResponseDTO> logoutUser(@AuthenticationPrincipal LocalUser user)
+    {
+        return new ResponseEntity<LogoutResponseDTO>( userService.logoutUser(user), HttpStatus.OK);
     }
 }
