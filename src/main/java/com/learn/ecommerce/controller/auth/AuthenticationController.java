@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -123,8 +124,10 @@ public class AuthenticationController {
     })
 
     @GetMapping("/me")
-    public ResponseEntity<UserDTO> getLoggedInUserProfile(@AuthenticationPrincipal LocalUser user)
+    public ResponseEntity<UserDTO> getLoggedInUserProfile(@AuthenticationPrincipal User userDetails)
     {
+        LocalUser user = localUserRepo.findByUserNameIgnoreCase(userDetails.getUsername()).orElseThrow();
+
 
         return new ResponseEntity<>( userService.getUserProfile(user), HttpStatus.OK);
     }
@@ -220,8 +223,10 @@ public class AuthenticationController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<LogoutResponseDTO> logoutUser(@AuthenticationPrincipal LocalUser user)
+    public ResponseEntity<LogoutResponseDTO> logoutUser(@AuthenticationPrincipal User userDetails)
     {
+        LocalUser user = localUserRepo.findByUserNameIgnoreCase(userDetails.getUsername()).orElseThrow();
+
         return new ResponseEntity<LogoutResponseDTO>( userService.logoutUser(user), HttpStatus.OK);
     }
 }

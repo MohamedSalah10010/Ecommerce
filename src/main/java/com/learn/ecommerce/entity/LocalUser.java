@@ -48,17 +48,17 @@ public class LocalUser extends BaseAuditEntity implements UserDetails {
     @JsonIgnore
     private Collection<VerificationToken> verificationTokens = new ArrayList<>();
 
-    @Column(nullable = false)
-    private Boolean isEnabled = false;
+    @Column(name = "is_enabled", nullable = false, columnDefinition = "BIT DEFAULT 0")
+    private boolean isEnabled = false;
 
-    @Column(nullable = false)
-    private Boolean isVerified = false;
+    @Column(name = "is_verified", nullable = false, columnDefinition = "BIT DEFAULT 0")
+    private boolean isVerified = false;
 
-    @Column(nullable = false)
-    private Boolean isLocked = false;
+    @Column(name = "is_locked", nullable = false, columnDefinition = "BIT DEFAULT 0")
+    private boolean isLocked = false;
 
-    @Column(nullable = false)
-    private Boolean isDeleted = false;
+    @Column(name = "is_deleted", nullable = false, columnDefinition = "BIT DEFAULT 0")
+    private boolean isDeleted = false;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

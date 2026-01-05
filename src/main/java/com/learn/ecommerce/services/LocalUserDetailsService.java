@@ -18,7 +18,7 @@ public class LocalUserDetailsService implements UserDetailsService {
             throws UsernameNotFoundException {
 
         return userRepo.findByUserNameIgnoreCase(username)
-                .filter(user -> !user.getIsDeleted())
+                .filter(user -> !user.isDeleted())
                 .orElseThrow(() ->
                         new UsernameNotFoundException("User not found"));
     }

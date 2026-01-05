@@ -12,12 +12,11 @@ import java.util.Collection;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "web_order")
+@Table(name = "orders") // Avoid SQL Server reserved word "ORDER"
+public class WebOrder extends BaseAuditEntity {
 
-public class WebOrder extends BaseAuditEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
     private Long id;
 
     @ManyToOne(optional = false)
@@ -28,19 +27,11 @@ public class WebOrder extends BaseAuditEntity{
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 
-    @Column(name = "deleted", nullable = false)
-    private boolean deleted=false;
+    @Column(name = "is_deleted", nullable = false, columnDefinition = "BIT DEFAULT 0")
+    private boolean isDeleted = false;
+
     @OneToMany(mappedBy = "webOrder", cascade = CascadeType.ALL, orphanRemoval = true)
     private Collection<OrderQuantities> orderQuantities = new ArrayList<>();
-
-    public Collection<OrderQuantities> getOrderQuantities() {
-        return orderQuantities;
-    }
-
-    public void setOrderQuantities(Collection<OrderQuantities> orderQuantities) {
-        this.orderQuantities = orderQuantities;
-    }
-
-
-
 }
+
+

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -38,6 +39,19 @@ public class GlobalExceptionHandler {
 
     }
 
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex, WebRequest request)
+    {
+        logError("Access denied", ex);
+        return new ResponseEntity<>(ErrorResponseDTO
+                .builder()
+                .errorStatus(HttpStatus.FORBIDDEN)
+                .errorDescription(request.getDescription(true))
+                .errorMessage("You do not have permission to access this resource")
+                .errorTimestamp(LocalDateTime.now())
+                .build(),HttpStatus.FORBIDDEN);
+
+    }
 
     @ExceptionHandler(EmailFailureException.class)
     public ResponseEntity<?> handleEmailFailureException(EmailFailureException ex, WebRequest request)

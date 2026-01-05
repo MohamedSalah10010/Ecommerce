@@ -18,6 +18,8 @@ public class UserRoles extends BaseAuditEntity {
 
     @Column(name="role", nullable = false,unique = true)
     private String roleName;
+    @Column(name = "is_deleted", nullable = false,columnDefinition = "BIT DEFAULT 0")
+    private boolean isDeleted=false;
 
 
 }

@@ -25,26 +25,32 @@ public class ProductController {
     }
 
     // Public endpoint accessible by everyone
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_USER')")
+
     @GetMapping
     public ResponseEntity<Collection<ProductDTO>> getProducts() {
         return new ResponseEntity<>(productService.getProducts(), HttpStatus.OK);
     }
 
     // Public endpoint to get single product
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_USER')")
+
     @GetMapping("/{id}")
     public ResponseEntity<ProductDTO> getProduct(@PathVariable Long id) {
         return new ResponseEntity<>(productService.getProduct(id), HttpStatus.OK);
     }
 
     // Only admins can add a new product
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+
+    @PostMapping("/add")
     public ResponseEntity<ProductStatusDTO> addProduct(@Validated @RequestBody addProductDTO productBody) {
         return new ResponseEntity<>(productService.addProduct(productBody), HttpStatus.OK);
     }
 
     // Only admins can edit products
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+
     @PutMapping("/{id}")
     public ResponseEntity<ProductStatusDTO> editProduct(
             @PathVariable Long id,
@@ -54,7 +60,8 @@ public class ProductController {
     }
 
     // Only admins can delete products
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ProductStatusDTO> deleteProduct(@PathVariable Long id) {
         return new ResponseEntity<>(productService.deleteProduct(id), HttpStatus.OK);

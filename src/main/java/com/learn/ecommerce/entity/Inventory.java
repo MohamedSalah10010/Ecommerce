@@ -26,5 +26,7 @@ public class Inventory extends BaseAuditEntity{
     @Column(name = "quantity", nullable = false)
     private Integer  quantity;
 
+    @Column(name = "is_deleted", nullable = false,columnDefinition = "BIT DEFAULT 0")
+    private boolean isDeleted=false;
 
 }

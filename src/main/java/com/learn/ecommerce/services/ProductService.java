@@ -6,6 +6,7 @@ import com.learn.ecommerce.DTO.ProductResponseDTO.addProductDTO;
 import com.learn.ecommerce.entity.Inventory;
 import com.learn.ecommerce.entity.Product;
 import com.learn.ecommerce.exceptionhandler.ProductNotFoundException;
+import com.learn.ecommerce.repository.InventoryRepo;
 import com.learn.ecommerce.repository.ProductRepo;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
@@ -20,9 +21,10 @@ import java.util.Optional;
 public class ProductService {
 
     private ProductRepo productRepo;
-
-    public ProductService(ProductRepo productRepo) {
+    private InventoryRepo inventoryRepo;
+    public ProductService(ProductRepo productRepo, InventoryRepo inventoryRepo) {
         this.productRepo = productRepo;
+        this.inventoryRepo = inventoryRepo;
     }
 
     public Collection<ProductDTO> getProducts() {
@@ -60,22 +62,24 @@ public class ProductService {
 
     @Transactional
     public ProductStatusDTO addProduct(addProductDTO productBody) {
-        Product product = new Product().builder()
-                .price(productBody.getPrice())
-                .name(productBody.getName())
-                .shortDescription(productBody.getShortDescription())
-                .longDescription(productBody.getLongDescription())
-                .inventory(new Inventory().builder()
-                        .quantity(productBody.getQuantity())
-                        .build())
-                .build();
+        Product product = new Product();
+        product.setName(productBody.getName());
+        product.setShortDescription(productBody.getShortDescription());
+        product.setLongDescription(productBody.getLongDescription());
+        product.setPrice(productBody.getPrice());
 
-        productRepo.save(product);
+        Product savedProduct = productRepo.save(product);
+
+        Inventory inventory = new Inventory();
+        inventory.setProduct(savedProduct);
+        inventory.setQuantity(productBody.getQuantity());
+
+        inventoryRepo.save(inventory);
 
         return new ProductStatusDTO().builder()
                 .statusMessage("Product added successfully")
-                .productId(product.getId())
-                .productName(product.getName())
+                .productId(savedProduct.getId())
+                .productName(savedProduct.getName())
                 .build();
     }
 

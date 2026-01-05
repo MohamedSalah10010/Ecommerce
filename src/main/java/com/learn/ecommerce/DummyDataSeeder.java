@@ -82,8 +82,8 @@ public class DummyDataSeeder {
             u2.setEmail("abosalah100001000@gmail.com");
             u2.setPassword(encryptionService.encryptPassword("123456"));
             u2.setPhoneNumber("+201001112234");
-            u2.setIsEnabled(true);
-            u2.setIsVerified(true);
+            u2.setEnabled(true);
+            u2.setVerified(true);
             u2.setUserRoles(new ArrayList<>());
             u2.setAddresses(new ArrayList<>());
             u2.setVerificationTokens(new ArrayList<>());
@@ -97,8 +97,8 @@ public class DummyDataSeeder {
             u3.setEmail("ahmedsalah772015@gmail.com");
             u3.setPassword(encryptionService.encryptPassword("123456"));
             u3.setPhoneNumber("+201001112235");
-            u3.setIsEnabled(true);
-            u3.setIsVerified(true);
+            u3.setEnabled(true);
+            u3.setVerified(true);
             u3.setUserRoles(new ArrayList<>());
             u3.setAddresses(new ArrayList<>());
             u3.setVerificationTokens(new ArrayList<>());

@@ -93,8 +93,8 @@ public class UserService {
                 .phoneNumber(localUser.getPhoneNumber())
                 .roles(localUser.getUserRoles())
                 .addresses(localUser.getAddresses())
-                .isVerified(localUser.getIsVerified())
-                .isEnabled(localUser.getIsEnabled())
+                .isVerified(localUser.isVerified())
+                .isEnabled(localUser.isEnabled())
                 .createdAt(localUser.getCreatedAt())
                 .updatedAt(localUser.getUpdatedAt())
                 .build();
@@ -109,7 +109,7 @@ public class UserService {
         if (opUser.isPresent()) {
             LocalUser user = opUser.get();
             if (encryptionService.checkPassword(body.getPassword(), user.getPassword())) {
-                if (user.getIsVerified()) {
+                if (user.isVerified()) {
                     LoginTokens loginToken = new LoginTokens();
                     loginToken.setUser(user);
                     loginToken.setToken(jwtService.generateToken(user));
@@ -148,9 +148,9 @@ public class UserService {
             {
                 VerificationToken verificationToken = opToken.get();
                 if (verificationToken.getExpiryDate().isAfter(Instant.now())) {
-                    if (!user.getIsVerified()) {
-                        user.setIsVerified(true);
-                        user.setIsEnabled(true);
+                    if (!user.isVerified()) {
+                        user.setVerified(true);
+                        user.setEnabled(true);
                     }
 
                     user.getVerificationTokens().remove(verificationToken);
@@ -196,7 +196,7 @@ public class UserService {
         if (opUser.isPresent() && opUser.get().getEmail().equals(body.getEmail())) {
 
             LocalUser user = opUser.get();
-            if (user.getIsVerified())
+            if (user.isVerified())
             {
                 String token = jwtService.generatePasswordResetToken(user);
                 VerificationToken verificationToken = new VerificationToken();

@@ -29,8 +29,8 @@ public class Address extends BaseAuditEntity{
     @Column(name = "country", nullable = false, length = 100)
     private String country;
 
-    @Column(name = "deleted", nullable = false)
-    private boolean deleted=false;
+    @Column(name = "is_deleted", nullable = false,columnDefinition = "BIT DEFAULT 0")
+    private boolean isDeleted=false;
     @JsonIgnore
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false)

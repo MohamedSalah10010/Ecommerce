@@ -30,6 +30,8 @@ public class OrderQuantities extends BaseAuditEntity {
     @ManyToOne(optional = false)
     @JoinColumn(name = "web_order_id", nullable = false)
     private WebOrder webOrder;
+    @Column(name = "is_deleted", nullable = false,columnDefinition = "BIT DEFAULT 0")
+    private boolean isDeleted=false;
 
 
 

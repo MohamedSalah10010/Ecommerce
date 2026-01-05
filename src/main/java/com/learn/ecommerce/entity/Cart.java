@@ -14,6 +14,6 @@ public class Cart extends BaseAuditEntity{
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "deleted", nullable = false)
-    private boolean deleted=false;
+    @Column(name = "is_deleted", nullable = false,columnDefinition = "BIT DEFAULT 0")
+    private boolean isDeleted=false;
 }
