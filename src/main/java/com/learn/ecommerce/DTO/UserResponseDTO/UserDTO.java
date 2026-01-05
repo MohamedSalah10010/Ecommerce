@@ -2,6 +2,7 @@ package com.learn.ecommerce.DTO.UserResponseDTO;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.learn.ecommerce.entity.Address;
+import com.learn.ecommerce.entity.UserRoles;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -34,6 +35,9 @@ public class UserDTO {
     @JsonProperty("last_name")
     @Schema(example = "Doe")
     private String lastName;
+
+    private String phoneNumber;
+    private Collection<UserRoles> roles;
 
     @Schema(
             description = "List of user addresses",

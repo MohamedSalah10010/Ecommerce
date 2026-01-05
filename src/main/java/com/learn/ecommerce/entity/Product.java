@@ -29,6 +29,10 @@ public class Product extends BaseAuditEntity{
     @Column(name = "long_description")
     private String longDescription;
 
+    private  String category;
+
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted=false;
     @JsonIgnore
     @OneToOne(mappedBy = "product", cascade = CascadeType.REMOVE, optional = false, orphanRemoval = true)
     private Inventory inventory;

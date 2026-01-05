@@ -3,6 +3,9 @@ package com.learn.ecommerce.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,26 +17,26 @@ import java.util.Collection;
 @NoArgsConstructor
 @Builder
 @Table(name = "local_user")
-public class LocalUser extends BaseAuditEntity{
+public class LocalUser extends BaseAuditEntity implements UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "userName", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     private String userName;
 
-    @Column(name = "password", nullable = false,length = 1000)
     @JsonIgnore
+    @Column(nullable = false, length = 1000)
     private String password;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "first_name", nullable = false)
+    @Column(nullable = false)
     private String firstName;
 
-    @Column(name = "last_name", nullable = false)
+    @Column(nullable = false)
     private String lastName;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
@@ -45,20 +48,68 @@ public class LocalUser extends BaseAuditEntity{
     @JsonIgnore
     private Collection<VerificationToken> verificationTokens = new ArrayList<>();
 
-    @Column(name = "is_enabled", nullable = false,columnDefinition = "BIT DEFAULT 0")
+    @Column(nullable = false)
     private Boolean isEnabled = false;
 
-    @Column(name = "is_verified", nullable = false,columnDefinition = "BIT DEFAULT 0")
+    @Column(nullable = false)
     private Boolean isVerified = false;
 
-    @ManyToMany
-    @JoinTable(name = "local_user_userRoles",
+    @Column(nullable = false)
+    private Boolean isLocked = false;
+
+    @Column(nullable = false)
+    private Boolean isDeleted = false;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "local_user_userRoles",
             joinColumns = @JoinColumn(name = "localUser_id"),
-            inverseJoinColumns = @JoinColumn(name = "userRoles_id"))
+            inverseJoinColumns = @JoinColumn(name = "userRoles_id")
+    )
     private Collection<UserRoles> userRoles = new ArrayList<>();
 
-
-    @Column(name = "phone_number", nullable = false, unique = true, length = 13)
+    @Column(nullable = false, unique = true, length = 13)
     private String phoneNumber;
 
+    /* ===============================
+       UserDetails IMPLEMENTATION
+       =============================== */
+
+    @Override
+    @JsonIgnore
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return userRoles.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getRoleName()))
+                .toList();
+    }
+
+    @Override
+    @JsonIgnore
+    public String getUsername() {
+        return this.userName;
+    }
+
+    @Override
+    @JsonIgnore
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    @JsonIgnore
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    @JsonIgnore
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    @JsonIgnore
+    public boolean isEnabled() {
+        return true;
+    }
 }

@@ -131,6 +131,32 @@ public class GlobalExceptionHandler {
                 .build(),HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler
+    public ResponseEntity<?> handlePasswordMismatchException(PasswordMismatchException ex, WebRequest request)
+    {
+        logError("Password mismatch", ex);
+        return new ResponseEntity<>(ErrorResponseDTO
+                .builder()
+                .errorStatus(HttpStatus.BAD_REQUEST)
+                .errorDescription(request.getDescription(true))
+                .errorMessage("Password and confirm password do not match")
+                .errorTimestamp(LocalDateTime.now())
+                .build(),HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<?> handleProductNotFoundException(ProductNotFoundException ex, WebRequest request)
+    {
+        logError("Product not found", ex);
+        return new ResponseEntity<>(ErrorResponseDTO
+                .builder()
+                .errorStatus(HttpStatus.NOT_FOUND)
+                .errorDescription(request.getDescription(true))
+                .errorMessage("Product not found")
+                .errorTimestamp(LocalDateTime.now())
+                .build(),HttpStatus.NOT_FOUND);
+    }
+
     private void logError(String message, Exception ex) {
         log.error(message, ex);
         ex.printStackTrace();

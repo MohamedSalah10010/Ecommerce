@@ -1,13 +1,17 @@
-package com.learn.ecommerce.config.security;
+package com.learn.ecommerce.config;
 
+import com.learn.ecommerce.config.security.JwtRequestFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+
 @Configuration
+@EnableMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig {
 
     private JwtRequestFilter jwtRequestFilter;
@@ -31,12 +35,14 @@ public class WebSecurityConfig {
                                 ,"/auth/forgot-password"
                                 ,"/auth/request-verify"
                                 ,"/products"
+                                ,"/test"
+                                ,"/debug"
+                                ,"/test-auth"
                                 ,"/swagger-ui/**"
                                 ,"/v3/api-docs/**")
-
-
                                 .permitAll()
-                                .anyRequest().authenticated())
+                                .anyRequest().authenticated()
+                )
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
 

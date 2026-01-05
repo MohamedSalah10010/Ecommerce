@@ -25,7 +25,7 @@ public class AuditorAwareImpl implements AuditorAware<String> {
             if (principal instanceof UserDetails) {
                 return Optional.of(((UserDetails) principal).getUsername());
             } else if (principal instanceof LocalUser) { // if you are returning your entity as principal
-                return Optional.of(((LocalUser) principal).getUserName());
+                return Optional.of(((LocalUser) principal).getUsername());
             } else {
                 return Optional.of(principal.toString());
             }

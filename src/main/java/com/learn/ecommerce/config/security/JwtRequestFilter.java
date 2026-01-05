@@ -5,18 +5,20 @@ import com.learn.ecommerce.entity.LoginTokens;
 import com.learn.ecommerce.repository.LocalUserRepo;
 import com.learn.ecommerce.repository.LoginTokensRepo;
 import com.learn.ecommerce.services.JwtService;
+import com.learn.ecommerce.services.LocalUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Optional;
 
 
@@ -27,15 +29,20 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final LocalUserRepo localUserRepo;
     private final LoginTokensRepo loginTokensRepo;
+    private final UserDetailsService userDetailsService;
+
+    private final LocalUserDetailsService localUserDetailsService;
 
     public JwtRequestFilter(
             JwtService jwtService,
             LocalUserRepo localUserRepo,
-            LoginTokensRepo loginTokensRepo
-    ) {
+            LoginTokensRepo loginTokensRepo,
+            UserDetailsService userDetailsService, LocalUserDetailsService localUserDetailsService) {
         this.jwtService = jwtService;
         this.localUserRepo = localUserRepo;
         this.loginTokensRepo = loginTokensRepo;
+        this.userDetailsService = userDetailsService;
+        this.localUserDetailsService = localUserDetailsService;
     }
 
     @Override
@@ -100,17 +107,24 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
             LocalUser user = userOpt.get();
 
-//            var authorities = user.getUserRoles().stream()
-//                    .map(r -> new SimpleGrantedAuthority("ROLE_" + r.getRoleName()))
-//                    .toList();
+            // Wrap LocalUser into Spring Security UserDetails
+            User userDetails = (User) User.builder()
+                    .username(user.getUsername())
+                    .password(user.getPassword())
+                    .authorities(user.getAuthorities())
+                    .accountLocked(!user.isAccountNonLocked())
+                    .disabled(!user.isEnabled())
+                    .build();
 
             UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-            authentication.setDetails(
-                    new WebAuthenticationDetailsSource().buildDetails(request));
-
+            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            System.out.println("Authorities: " + authentication.getAuthorities());
+            System.out.println("Principal: " + authentication.getPrincipal());
+
 
             filterChain.doFilter(request, response);
 

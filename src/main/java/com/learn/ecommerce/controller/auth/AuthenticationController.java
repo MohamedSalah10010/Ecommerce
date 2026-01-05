@@ -121,9 +121,11 @@ public class AuthenticationController {
                     content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))
             )
     })
+
     @GetMapping("/me")
     public ResponseEntity<UserDTO> getLoggedInUserProfile(@AuthenticationPrincipal LocalUser user)
     {
+
         return new ResponseEntity<>( userService.getUserProfile(user), HttpStatus.OK);
     }
 

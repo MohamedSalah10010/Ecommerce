@@ -35,7 +35,10 @@ public class JwtService {
 
     public String generateToken(LocalUser user) {
         return JWT.create()
-                .withClaim(USERNAME_KEY, user.getUserName())
+                .withClaim(USERNAME_KEY, user.getUsername())
+                .withClaim("ROLE", user.getUserRoles()
+                        .stream()
+                        .map(role -> role.getRoleName()).toList())
                 .withIssuer(issuer)
                 .withExpiresAt(Date.from(Instant.now().plusSeconds(expiryInSeconds)))
                 .sign(algorithm);

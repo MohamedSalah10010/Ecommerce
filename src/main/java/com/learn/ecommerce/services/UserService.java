@@ -82,7 +82,22 @@ public class UserService {
         Optional<LocalUser> opUser = userRepository.findById(user.getId());
         if (opUser.isPresent()) {
             LocalUser localUser = opUser.get();
-            return ObjectMapperUtils.map(localUser, UserDTO.class);
+//            return ObjectMapperUtils.map(localUser, UserDTO.class);
+        return new UserDTO()
+                .builder()
+                .id(localUser.getId())
+                .userName(localUser.getUsername())
+                .email(localUser.getEmail())
+                .firstName(localUser.getFirstName())
+                .lastName(localUser.getLastName())
+                .phoneNumber(localUser.getPhoneNumber())
+                .roles(localUser.getUserRoles())
+                .addresses(localUser.getAddresses())
+                .isVerified(localUser.getIsVerified())
+                .isEnabled(localUser.getIsEnabled())
+                .createdAt(localUser.getCreatedAt())
+                .updatedAt(localUser.getUpdatedAt())
+                .build();
         }
 
         throw new UserNotFoundException();

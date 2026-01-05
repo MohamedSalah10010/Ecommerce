@@ -1,5 +1,6 @@
 package com.learn.ecommerce.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,6 +18,7 @@ public class Inventory extends BaseAuditEntity{
     private Long id;
 
 
+    @JsonIgnore
     @OneToOne(optional = false, cascade =  CascadeType.ALL)
     @JoinColumn(name = "product_id", nullable = false, unique = true)
     private Product product;
