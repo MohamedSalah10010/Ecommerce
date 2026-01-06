@@ -7,13 +7,19 @@ import com.learn.ecommerce.entity.Inventory;
 import com.learn.ecommerce.entity.Product;
 import com.learn.ecommerce.exceptionhandler.ProductNotFoundException;
 import com.learn.ecommerce.repository.InventoryRepo;
+import com.learn.ecommerce.repository.JpaQueryLogic.ProductSpecification;
 import com.learn.ecommerce.repository.ProductRepo;
 import lombok.Getter;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,23 +33,65 @@ public class ProductService {
         this.inventoryRepo = inventoryRepo;
     }
 
-    public Collection<ProductDTO> getProducts() {
-        Collection<ProductDTO> productsDTO = new ArrayList<ProductDTO>();
-        Collection<Product> products = (Collection<Product>) productRepo.findAll();
-        for (Product product : products) {
-            if (product.isDeleted())
-                continue;
+//    public Collection<ProductDTO> getProducts() {
+//        Collection<ProductDTO> productsDTO = new ArrayList<ProductDTO>();
+//        Collection<Product> products = (Collection<Product>) productRepo.findAll();
+//        for (Product product : products) {
+//            if (product.isDeleted())
+//                continue;
+//
+//            productsDTO.add(new ProductDTO().builder()
+//                    .price(product.getPrice())
+//                    .name(product.getName())
+//                    .shortDescription(product.getShortDescription())
+//                    .longDescription(product.getLongDescription())
+//                    .inventory(product.getInventory())
+//                    .build());
+//        }
+//        return productsDTO;
+//    }
 
-            productsDTO.add(new ProductDTO().builder()
-                    .price(product.getPrice())
-                    .name(product.getName())
-                    .shortDescription(product.getShortDescription())
-                    .longDescription(product.getLongDescription())
-                    .inventory(product.getInventory())
-                    .build());
+
+        public Page<ProductDTO> getProducts(
+
+                Double priceMin,
+                Double priceMax,
+                String sortBy,
+                String direction,
+                Pageable pageable
+                                    ) {
+
+            Specification<Product> spec = Specification
+                    .where(ProductSpecification.isNotDeleted())
+//                    .and(ProductSpecification.hasCategory(category))
+                    .and(ProductSpecification.priceBetween(priceMin, priceMax));
+
+            Sort sort = Sort.unsorted();
+
+            if (sortBy != null) {
+                sort = Sort.by(
+                        "desc".equalsIgnoreCase(direction)
+                                ? Sort.Direction.DESC
+                                : Sort.Direction.ASC,
+                        sortBy
+                );
+            }
+
+            Pageable finalPageable = PageRequest.of(
+                    pageable.getPageNumber(),
+                    pageable.getPageSize(),
+                    sort
+            );
+
+            return productRepo.findAll(spec, finalPageable)
+                    .map(product -> ProductDTO.builder()
+                            .name(product.getName())
+                            .price(product.getPrice())
+                            .shortDescription(product.getShortDescription())
+                            .build());
         }
-        return productsDTO;
-    }
+
+
 
     public ProductDTO getProduct(Long id) {
         Product product = productRepo.findById(id).get();
@@ -128,6 +176,25 @@ public class ProductService {
                 .statusMessage("Product Deleted successfully")
                 .productId(id)
                 .build();
+    }
+
+
+    public List<ProductDTO> searchProducts(String query) {
+        List<ProductDTO> productsDTO = new ArrayList<ProductDTO>();
+        List<Product> products = productRepo.searchByName(query);
+        for (Product product : products) {
+            if (product.isDeleted())
+                continue;
+
+            productsDTO.add(new ProductDTO().builder()
+                    .price(product.getPrice())
+                    .name(product.getName())
+                    .shortDescription(product.getShortDescription())
+                    .longDescription(product.getLongDescription())
+                    .inventory(product.getInventory())
+                    .build());
+        }
+        return productsDTO;
     }
 }
 
