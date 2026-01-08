@@ -29,12 +29,16 @@ public class Product extends BaseAuditEntity{
     @Column(name = "long_description")
     private String longDescription;
 
-    private  String category;
+
     @Column(name = "is_deleted", nullable = false,columnDefinition = "BIT DEFAULT 0")
     private boolean isDeleted=false;
     @JsonIgnore
     @OneToOne(mappedBy = "product", cascade = CascadeType.REMOVE, optional = false, orphanRemoval = true)
     private Inventory inventory;
 
+
+    @ManyToOne( fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = true)
+    private Category category;
 
 }

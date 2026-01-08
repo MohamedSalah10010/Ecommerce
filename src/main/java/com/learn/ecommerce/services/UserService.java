@@ -68,7 +68,7 @@ public class UserService {
         user.setPassword(encryptionService.encryptPassword(body.getPassword()));
         user.setUserName(body.getUsername());
         VerificationToken verificationToken = createVerificationToken(user);
-        emailService.sendVerficationEmail(verificationToken);
+        emailService.sendVerificationEmail(verificationToken);
         user.getVerificationTokens().add(verificationToken);
         userRepository.save(user);
 
@@ -179,7 +179,7 @@ public class UserService {
                {
 
                    VerificationToken verificationToken = createVerificationToken(optionalUser.get());
-                   emailService.sendVerficationEmail(verificationToken);
+                   emailService.sendVerificationEmail(verificationToken);
                    user.getVerificationTokens().add(verificationToken);
                    userRepository.save(user);
                     return;

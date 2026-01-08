@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Getter
@@ -39,15 +40,18 @@ public class LocalUser extends BaseAuditEntity implements UserDetails {
     @Column(nullable = false)
     private String lastName;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    @JsonIgnore
-    private Collection<Address> addresses = new ArrayList<>();
+    @Column(nullable = false, unique = true, length = 13)
+    private String phoneNumber;
+
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("id DESC")
     @JsonIgnore
     private Collection<VerificationToken> verificationTokens = new ArrayList<>();
 
+    /* ===============================
+      ACCOUNT FLAGS
+      =============================== */
     @Column(name = "is_enabled", nullable = false, columnDefinition = "BIT DEFAULT 0")
     private boolean isEnabled = false;
 
@@ -60,16 +64,32 @@ public class LocalUser extends BaseAuditEntity implements UserDetails {
     @Column(name = "is_deleted", nullable = false, columnDefinition = "BIT DEFAULT 0")
     private boolean isDeleted = false;
 
+/* ===============================
+       USER ROLES
+       =============================== */
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "local_user_userRoles",
-            joinColumns = @JoinColumn(name = "localUser_id"),
-            inverseJoinColumns = @JoinColumn(name = "userRoles_id")
+            name = "local_user_user_roles",
+            joinColumns = @JoinColumn(name = "local_user_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_role_id")
     )
     private Collection<UserRoles> userRoles = new ArrayList<>();
 
-    @Column(nullable = false, unique = true, length = 13)
-    private String phoneNumber;
+    /* ===============================
+       ADDRESSES
+       =============================== */
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private Collection<Address> addresses = new ArrayList<>();
+
+    /* ===============================
+       CARTS
+       =============================== */
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Cart> carts = new ArrayList<>();
 
     /* ===============================
        UserDetails IMPLEMENTATION
@@ -92,13 +112,13 @@ public class LocalUser extends BaseAuditEntity implements UserDetails {
     @Override
     @JsonIgnore
     public boolean isAccountNonExpired() {
-        return true;
+        return this.isEnabled;
     }
 
     @Override
     @JsonIgnore
     public boolean isAccountNonLocked() {
-        return true;
+        return !this.isLocked;
     }
 
     @Override
@@ -110,6 +130,6 @@ public class LocalUser extends BaseAuditEntity implements UserDetails {
     @Override
     @JsonIgnore
     public boolean isEnabled() {
-        return true;
+        return this.isEnabled;
     }
 }

@@ -35,7 +35,7 @@ public class EmailService {
         return message;
     }
 
-    public void sendVerficationEmail(VerificationToken verificationToken)
+    public void sendVerificationEmail(VerificationToken verificationToken)
     {
         SimpleMailMessage message = createSimpleMailMessage();
 

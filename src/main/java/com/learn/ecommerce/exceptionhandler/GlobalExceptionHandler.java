@@ -171,6 +171,19 @@ public class GlobalExceptionHandler {
                 .build(),HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler
+    public ResponseEntity<?> handleCategoryNotFoundException(CategoryNotFoundException ex, WebRequest request)
+    {
+        logError("Category not found", ex);
+        return new ResponseEntity<>(ErrorResponseDTO
+                .builder()
+                .errorStatus(HttpStatus.NOT_FOUND)
+                .errorDescription(request.getDescription(true))
+                .errorMessage("Category not found")
+                .errorTimestamp(LocalDateTime.now())
+                .build(),HttpStatus.NOT_FOUND);
+    }
+
     private void logError(String message, Exception ex) {
         log.error(message, ex);
         ex.printStackTrace();

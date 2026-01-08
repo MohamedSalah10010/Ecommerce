@@ -1,31 +1,33 @@
 package com.learn.ecommerce.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Entity
-@Table(name = "cart")
-public class Cart extends BaseAuditEntity{
+@Table(name = "category")
+public class Category extends BaseAuditEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
+    @Column(name = "name", nullable = false, unique = true)
+    private String name;
 
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private LocalUser user;
-
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CartItem> items = new ArrayList<>();
+    @Column(name = "description")
+    private String description;
 
     @Column(name = "is_deleted", nullable = false, columnDefinition = "BIT DEFAULT 0")
     private boolean isDeleted = false;
+
+    @OneToMany(mappedBy = "category")
+    private List<Product> products = new ArrayList<>();
 
 }

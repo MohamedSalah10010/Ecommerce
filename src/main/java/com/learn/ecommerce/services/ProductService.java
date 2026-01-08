@@ -1,15 +1,19 @@
 package com.learn.ecommerce.services;
 
-import com.learn.ecommerce.DTO.ProductResponseDTO.ProductDTO;
-import com.learn.ecommerce.DTO.ProductResponseDTO.ProductStatusDTO;
-import com.learn.ecommerce.DTO.ProductResponseDTO.addProductDTO;
+import com.learn.ecommerce.DTO.ProductDTO.AddProductDTO;
+import com.learn.ecommerce.DTO.ProductDTO.ProductDTO;
+import com.learn.ecommerce.DTO.ProductDTO.ProductStatusDTO;
+import com.learn.ecommerce.entity.Category;
 import com.learn.ecommerce.entity.Inventory;
 import com.learn.ecommerce.entity.Product;
+import com.learn.ecommerce.exceptionhandler.CategoryNotFoundException;
 import com.learn.ecommerce.exceptionhandler.ProductNotFoundException;
+import com.learn.ecommerce.repository.CategoryRepo;
 import com.learn.ecommerce.repository.InventoryRepo;
 import com.learn.ecommerce.repository.JpaQueryLogic.ProductSpecification;
 import com.learn.ecommerce.repository.ProductRepo;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,11 +28,14 @@ import java.util.Optional;
 
 @Service
 @Getter
+@RequiredArgsConstructor
 public class ProductService {
 
     private ProductRepo productRepo;
     private InventoryRepo inventoryRepo;
-    public ProductService(ProductRepo productRepo, InventoryRepo inventoryRepo) {
+    private CategoryRepo categoryRepo;
+    public ProductService(ProductRepo productRepo, InventoryRepo inventoryRepo, CategoryRepo categoryRepo) {
+        this.categoryRepo = categoryRepo;
         this.productRepo = productRepo;
         this.inventoryRepo = inventoryRepo;
     }
@@ -95,7 +102,10 @@ public class ProductService {
 
     public ProductDTO getProduct(Long id) {
         Product product = productRepo.findById(id).get();
-
+//
+//        productRepo.findById(id)
+//                .filter(p -> !p.isDeleted())
+//                .orElseThrow(ProductNotFoundException::new);
         if (product == null || product.isDeleted())
             throw new ProductNotFoundException();
 
@@ -104,18 +114,28 @@ public class ProductService {
                 .name(product.getName())
                 .shortDescription(product.getShortDescription())
                 .longDescription(product.getLongDescription())
-                .inventory(product.getInventory())
+                .quantity(product.getInventory().getQuantity())
+                .categoryName(product.getCategory().getName())
+                .categoryId(product.getCategory().getId())
                 .build();
     }
 
     @Transactional
-    public ProductStatusDTO addProduct(addProductDTO productBody) {
+    public ProductStatusDTO addProduct(AddProductDTO productBody) {
         Product product = new Product();
         product.setName(productBody.getName());
         product.setShortDescription(productBody.getShortDescription());
         product.setLongDescription(productBody.getLongDescription());
         product.setPrice(productBody.getPrice());
 
+        if(productBody.getCategoryId() != null){
+            Category category =categoryRepo.findById(
+                    productBody.getCategoryId()
+            ).orElseThrow(() -> new CategoryNotFoundException()
+            );
+
+            product.setCategory(category);
+        }
         Product savedProduct = productRepo.save(product);
 
         Inventory inventory = new Inventory();
@@ -132,25 +152,33 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductStatusDTO editProduct(Long id, addProductDTO productBody) {
+    public ProductStatusDTO editProduct(Long id, AddProductDTO productBody) {
         Optional<Product> productOptional = productRepo.findById(id);
         if (productOptional.isPresent() && !productOptional.get().isDeleted()) {
             Product product = productOptional.get();
             if (!productBody.getName().isEmpty())
                 product.setName(productBody.getName());
 
-            if (!productBody.getShortDescription().isEmpty())
+            if (productBody.getShortDescription()!= null)
                 product.setShortDescription(productBody.getShortDescription());
 
-            if (!productBody.getLongDescription().isEmpty())
+            if (productBody.getLongDescription()!= null)
                 product.setLongDescription(productBody.getLongDescription());
 
-            if (!productBody.getPrice().toString().isEmpty())
+            if (productBody.getPrice()!= null)
                 product.setPrice(productBody.getPrice());
 
-            if (!productBody.getQuantity().toString().isEmpty())
+            if (productBody.getQuantity()!= null)
                 product.getInventory().setQuantity(productBody.getQuantity());
 
+            if (productBody.getCategoryId()!=null) {
+                Category category = categoryRepo.findById(
+                        productBody.getCategoryId()
+                ).orElseThrow(() -> new CategoryNotFoundException()
+                );
+
+                product.setCategory(category);
+            }
             productRepo.save(product);
 
             return new ProductStatusDTO().builder()
@@ -191,7 +219,9 @@ public class ProductService {
                     .name(product.getName())
                     .shortDescription(product.getShortDescription())
                     .longDescription(product.getLongDescription())
-                    .inventory(product.getInventory())
+                    .quantity(product.getInventory().getQuantity())
+                    .categoryId(product.getCategory().getId())
+                    .categoryName(product.getCategory().getName())
                     .build());
         }
         return productsDTO;

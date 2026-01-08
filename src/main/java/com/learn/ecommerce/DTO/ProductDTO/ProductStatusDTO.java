@@ -1,4 +1,4 @@
-package com.learn.ecommerce.DTO.ProductResponseDTO;
+package com.learn.ecommerce.DTO.ProductDTO;
 
 import lombok.*;
 

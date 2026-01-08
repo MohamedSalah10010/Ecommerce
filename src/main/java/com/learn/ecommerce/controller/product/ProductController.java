@@ -1,8 +1,8 @@
 package com.learn.ecommerce.controller.product;
 
-import com.learn.ecommerce.DTO.ProductResponseDTO.ProductDTO;
-import com.learn.ecommerce.DTO.ProductResponseDTO.ProductStatusDTO;
-import com.learn.ecommerce.DTO.ProductResponseDTO.addProductDTO;
+import com.learn.ecommerce.DTO.ProductDTO.AddProductDTO;
+import com.learn.ecommerce.DTO.ProductDTO.ProductDTO;
+import com.learn.ecommerce.DTO.ProductDTO.ProductStatusDTO;
 import com.learn.ecommerce.services.ProductService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -53,7 +53,7 @@ public class ProductController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
 
     @PostMapping("/add")
-    public ResponseEntity<ProductStatusDTO> addProduct(@Validated @RequestBody addProductDTO productBody) {
+    public ResponseEntity<ProductStatusDTO> addProduct(@Validated @RequestBody AddProductDTO productBody) {
         return new ResponseEntity<>(productService.addProduct(productBody), HttpStatus.OK);
     }
 
@@ -63,7 +63,7 @@ public class ProductController {
     @PutMapping("/{id}")
     public ResponseEntity<ProductStatusDTO> editProduct(
             @PathVariable Long id,
-            @Validated @RequestBody addProductDTO productBody
+            @Validated @RequestBody AddProductDTO productBody
     ) {
         return new ResponseEntity<>(productService.editProduct(id, productBody), HttpStatus.OK);
     }

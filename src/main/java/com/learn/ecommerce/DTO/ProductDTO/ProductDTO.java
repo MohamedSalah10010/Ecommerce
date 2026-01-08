@@ -1,4 +1,4 @@
-package com.learn.ecommerce.DTO.ProductResponseDTO;
+package com.learn.ecommerce.DTO.ProductDTO;
 
 import lombok.*;
 
@@ -8,7 +8,8 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class addProductDTO {
+public class ProductDTO {
+
     private String name;
 
     private Double price;
@@ -18,4 +19,8 @@ public class addProductDTO {
     private String longDescription;
 
     private Integer quantity;
+
+    private Long categoryId;
+
+    private String categoryName;
 }
