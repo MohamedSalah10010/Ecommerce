@@ -1,8 +1,6 @@
 package com.learn.ecommerce.controller.product;
 
-import com.learn.ecommerce.DTO.ProductDTO.AddProductDTO;
-import com.learn.ecommerce.DTO.ProductDTO.ProductDTO;
-import com.learn.ecommerce.DTO.ProductDTO.ProductStatusDTO;
+import com.learn.ecommerce.DTO.ProductDTO.*;
 import com.learn.ecommerce.services.ProductService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -81,5 +79,12 @@ public class ProductController {
     public ResponseEntity<List<ProductDTO>> searchProducts(@RequestParam String query) {
         return new ResponseEntity<>(productService.searchProducts(query), HttpStatus.OK);
 
+    }
+    @PatchMapping("/update-category/{productId}")
+    public ResponseEntity<ProductCategoryDTO> updateProductCategory(
+            @PathVariable Long productId,
+            @Validated  @RequestParam AddProductCategoryDTO body
+    ) {
+        return new ResponseEntity<>(productService.updateProductCategory(productId, body), HttpStatus.OK);
     }
 }

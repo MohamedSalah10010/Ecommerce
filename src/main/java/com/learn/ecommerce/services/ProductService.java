@@ -1,8 +1,6 @@
 package com.learn.ecommerce.services;
 
-import com.learn.ecommerce.DTO.ProductDTO.AddProductDTO;
-import com.learn.ecommerce.DTO.ProductDTO.ProductDTO;
-import com.learn.ecommerce.DTO.ProductDTO.ProductStatusDTO;
+import com.learn.ecommerce.DTO.ProductDTO.*;
 import com.learn.ecommerce.entity.Category;
 import com.learn.ecommerce.entity.Inventory;
 import com.learn.ecommerce.entity.Product;
@@ -207,6 +205,7 @@ public class ProductService {
     }
 
 
+
     public List<ProductDTO> searchProducts(String query) {
         List<ProductDTO> productsDTO = new ArrayList<ProductDTO>();
         List<Product> products = productRepo.searchByName(query);
@@ -226,5 +225,23 @@ public class ProductService {
         }
         return productsDTO;
     }
+
+    @Transactional
+    public ProductCategoryDTO updateProductCategory(Long productId,AddProductCategoryDTO body) {
+        Product product = productRepo.findById(productId).orElseThrow(() -> new ProductNotFoundException());
+        if(product.isDeleted()) {throw new ProductNotFoundException();}
+        Category category = categoryRepo.findById(body.getCategoryId()).orElseThrow(() -> new CategoryNotFoundException());
+        if(category.isDeleted()) {throw new CategoryNotFoundException();}
+        product.setCategory(category);
+        productRepo.save(product);
+        return new ProductCategoryDTO().builder()
+                .productName(product.getName())
+                .categoryId(category.getId())
+                .categoryName(category.getName())
+                .productId(product.getId())
+                .build();
+
+    }
+
 }
 
