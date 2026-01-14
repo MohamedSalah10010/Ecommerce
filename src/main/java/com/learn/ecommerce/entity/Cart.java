@@ -1,8 +1,10 @@
 package com.learn.ecommerce.entity;
 
+import com.learn.ecommerce.utils.CartStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +25,14 @@ public class Cart extends BaseAuditEntity{
     private LocalUser user;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    @SQLRestriction("is_deleted = false")
     private List<CartItem> items = new ArrayList<>();
 
     @Column(name = "is_deleted", nullable = false, columnDefinition = "BIT DEFAULT 0")
     private boolean isDeleted = false;
+
+
+    @Enumerated(EnumType.STRING)
+    private CartStatus status; // ACTIVE, CHECKED_OUT, CANCELLED
 
 }

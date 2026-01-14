@@ -25,8 +25,7 @@ public class GlobalExceptionHandler {
 
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> globalExceptionHandler(Exception exception, WebRequest request)
-    {
+    public ResponseEntity<?> globalExceptionHandler(Exception exception, WebRequest request) {
         log.error(exception.getMessage(), exception);
 
         return new ResponseEntity<>(ErrorResponseDTO
@@ -35,13 +34,12 @@ public class GlobalExceptionHandler {
                 .errorDescription(request.getDescription(true))
                 .errorMessage(exception.getMessage())
                 .errorTimestamp(LocalDateTime.now())
-        .build(),HttpStatus.INTERNAL_SERVER_ERROR);
+                .build(), HttpStatus.INTERNAL_SERVER_ERROR);
 
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex, WebRequest request)
-    {
+    public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) {
         logError("Access denied", ex);
         return new ResponseEntity<>(ErrorResponseDTO
                 .builder()
@@ -49,13 +47,12 @@ public class GlobalExceptionHandler {
                 .errorDescription(request.getDescription(true))
                 .errorMessage("You do not have permission to access this resource")
                 .errorTimestamp(LocalDateTime.now())
-                .build(),HttpStatus.FORBIDDEN);
+                .build(), HttpStatus.FORBIDDEN);
 
     }
 
     @ExceptionHandler(EmailFailureException.class)
-    public ResponseEntity<?> handleEmailFailureException(EmailFailureException ex, WebRequest request)
-    {
+    public ResponseEntity<?> handleEmailFailureException(EmailFailureException ex, WebRequest request) {
         logError("Email failure occurred", ex);
         return new ResponseEntity<>(ErrorResponseDTO
                 .builder()
@@ -63,13 +60,12 @@ public class GlobalExceptionHandler {
                 .errorDescription(request.getDescription(true))
                 .errorMessage(ex.getMessage())
                 .errorTimestamp(LocalDateTime.now())
-                .build(),HttpStatus.INTERNAL_SERVER_ERROR);
+                .build(), HttpStatus.INTERNAL_SERVER_ERROR);
 
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<?> handleUserAlreadyExistsException(UserAlreadyExistsException ex, WebRequest request)
-    {
+    public ResponseEntity<?> handleUserAlreadyExistsException(UserAlreadyExistsException ex, WebRequest request) {
         logError("User already exists", ex);
         return new ResponseEntity<>(ErrorResponseDTO
                 .builder()
@@ -77,7 +73,7 @@ public class GlobalExceptionHandler {
                 .errorDescription(request.getDescription(true))
                 .errorMessage("User with given email already exists")
                 .errorTimestamp(LocalDateTime.now())
-                .build(),HttpStatus.CONFLICT);
+                .build(), HttpStatus.CONFLICT);
 
     }
 
@@ -94,8 +90,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<?> handleUserNotFoundException(UserNotFoundException ex, WebRequest request)
-    {
+    public ResponseEntity<?> handleUserNotFoundException(UserNotFoundException ex, WebRequest request) {
         logError("User not found", ex);
         return new ResponseEntity<>(ErrorResponseDTO
                 .builder()
@@ -103,12 +98,11 @@ public class GlobalExceptionHandler {
                 .errorDescription(request.getDescription(true))
                 .errorMessage("User not found")
                 .errorTimestamp(LocalDateTime.now())
-                .build(),HttpStatus.NOT_FOUND);
+                .build(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(TokenNotFoundException.class)
-    public ResponseEntity<?> handleTokenNotFoundException(TokenNotFoundException ex, WebRequest request)
-    {
+    public ResponseEntity<?> handleTokenNotFoundException(TokenNotFoundException ex, WebRequest request) {
         logError("Token not found", ex);
         return new ResponseEntity<>(ErrorResponseDTO
                 .builder()
@@ -116,12 +110,11 @@ public class GlobalExceptionHandler {
                 .errorDescription(request.getDescription(true))
                 .errorMessage("Token not found ")
                 .errorTimestamp(LocalDateTime.now())
-                .build(),HttpStatus.NOT_FOUND);
+                .build(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(TokenExpiredException.class)
-    public  ResponseEntity<?> handleTokenExpiredException(TokenExpiredException ex, WebRequest request)
-    {
+    public ResponseEntity<?> handleTokenExpiredException(TokenExpiredException ex, WebRequest request) {
         logError("Token expired", ex);
         return new ResponseEntity<>(ErrorResponseDTO
                 .builder()
@@ -129,12 +122,11 @@ public class GlobalExceptionHandler {
                 .errorDescription(request.getDescription(true))
                 .errorMessage("Token has expired")
                 .errorTimestamp(LocalDateTime.now())
-                .build(),HttpStatus.UNAUTHORIZED);
+                .build(), HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<?> handleInvalidCredentialsException(InvalidCredentialsException ex, WebRequest request)
-    {
+    public ResponseEntity<?> handleInvalidCredentialsException(InvalidCredentialsException ex, WebRequest request) {
         logError("Invalid credentials", ex);
         return new ResponseEntity<>(ErrorResponseDTO
                 .builder()
@@ -142,12 +134,11 @@ public class GlobalExceptionHandler {
                 .errorDescription(request.getDescription(true))
                 .errorMessage("Invalid username or password")
                 .errorTimestamp(LocalDateTime.now())
-                .build(),HttpStatus.UNAUTHORIZED);
+                .build(), HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler
-    public ResponseEntity<?> handlePasswordMismatchException(PasswordMismatchException ex, WebRequest request)
-    {
+    public ResponseEntity<?> handlePasswordMismatchException(PasswordMismatchException ex, WebRequest request) {
         logError("Password mismatch", ex);
         return new ResponseEntity<>(ErrorResponseDTO
                 .builder()
@@ -155,12 +146,11 @@ public class GlobalExceptionHandler {
                 .errorDescription(request.getDescription(true))
                 .errorMessage("Password and confirm password do not match")
                 .errorTimestamp(LocalDateTime.now())
-                .build(),HttpStatus.BAD_REQUEST);
+                .build(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
-    public ResponseEntity<?> handleProductNotFoundException(ProductNotFoundException ex, WebRequest request)
-    {
+    public ResponseEntity<?> handleProductNotFoundException(ProductNotFoundException ex, WebRequest request) {
         logError("Product not found", ex);
         return new ResponseEntity<>(ErrorResponseDTO
                 .builder()
@@ -168,12 +158,11 @@ public class GlobalExceptionHandler {
                 .errorDescription(request.getDescription(true))
                 .errorMessage("Product not found")
                 .errorTimestamp(LocalDateTime.now())
-                .build(),HttpStatus.NOT_FOUND);
+                .build(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler
-    public ResponseEntity<?> handleCategoryNotFoundException(CategoryNotFoundException ex, WebRequest request)
-    {
+    public ResponseEntity<?> handleCategoryNotFoundException(CategoryNotFoundException ex, WebRequest request) {
         logError("Category not found", ex);
         return new ResponseEntity<>(ErrorResponseDTO
                 .builder()
@@ -181,7 +170,57 @@ public class GlobalExceptionHandler {
                 .errorDescription(request.getDescription(true))
                 .errorMessage("Category not found")
                 .errorTimestamp(LocalDateTime.now())
-                .build(),HttpStatus.NOT_FOUND);
+                .build(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<?> handleInsufficientStockException(InsufficientStockException ex, WebRequest request) {
+        logError("Insufficient stock", ex);
+        return new ResponseEntity<>(ErrorResponseDTO
+                .builder()
+                .errorStatus(HttpStatus.FORBIDDEN)
+                .errorDescription(request.getDescription(true))
+                .errorMessage("insufficient stock for the product quantity")
+                .errorTimestamp(LocalDateTime.now())
+                .build(), HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<?> handleIllegalStateException(IllegalStateException ex, WebRequest request)
+    {
+        logError("Illegal state ", ex);
+        return new ResponseEntity<>(ErrorResponseDTO
+                .builder()
+                .errorStatus(HttpStatus.CONFLICT)
+                .errorDescription(request.getDescription(true))
+                .errorMessage(ex.getMessage())
+                .errorTimestamp(LocalDateTime.now())
+                .build(), HttpStatus.CONFLICT
+        );
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<?> handleCartIsEmptyException(CartIsEmptyException ex, WebRequest request) {
+        logError("Cart is empty", ex);
+        return new ResponseEntity<>(ErrorResponseDTO
+                .builder()
+                .errorStatus(HttpStatus.FORBIDDEN)
+                .errorDescription(request.getDescription(true))
+                .errorMessage(ex.getMessage())
+                .errorTimestamp(LocalDateTime.now())
+                .build(), HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<?> handleItemNotFoundException(ItemNotFoundException ex, WebRequest request) {
+        logError("Item not found", ex);
+        return new  ResponseEntity<>(ErrorResponseDTO
+                .builder()
+                .errorStatus(HttpStatus.NOT_FOUND)
+                .errorDescription(request.getDescription(true))
+                .errorMessage(ex.getMessage())
+                .errorTimestamp(LocalDateTime.now())
+                .build(), HttpStatus.NOT_FOUND);
     }
 
     private void logError(String message, Exception ex) {

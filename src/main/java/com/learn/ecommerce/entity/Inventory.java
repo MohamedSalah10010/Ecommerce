@@ -29,4 +29,6 @@ public class Inventory extends BaseAuditEntity{
     @Column(name = "is_deleted", nullable = false,columnDefinition = "BIT DEFAULT 0")
     private boolean isDeleted=false;
 
+    @Version
+    private Long version;
 }
