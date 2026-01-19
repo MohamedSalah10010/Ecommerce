@@ -15,4 +15,5 @@ public interface CartRepo extends CrudRepository<Cart,Long> {
     Optional<Cart> findByUserId(Long id);
 
     Optional<Cart> findByUserIdAndStatus(Long id, CartStatus cartStatus);
+    Optional<Cart> findByUserIdAndCartId(Long id, Long cartId);
 }

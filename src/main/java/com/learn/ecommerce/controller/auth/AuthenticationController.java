@@ -7,6 +7,7 @@ import com.learn.ecommerce.DTO.UserResponseDTO.LogoutResponseDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.UserDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.UserStatusDTO;
 import com.learn.ecommerce.entity.LocalUser;
+import com.learn.ecommerce.exceptionhandler.UserNotFoundException;
 import com.learn.ecommerce.repository.LocalUserRepo;
 import com.learn.ecommerce.services.JwtService;
 import com.learn.ecommerce.services.UserService;
@@ -126,7 +127,7 @@ public class AuthenticationController {
     @GetMapping("/me")
     public ResponseEntity<UserDTO> getLoggedInUserProfile(@AuthenticationPrincipal User userDetails)
     {
-        LocalUser user = localUserRepo.findByUserNameIgnoreCase(userDetails.getUsername()).orElseThrow();
+        LocalUser user = localUserRepo.findByUserNameIgnoreCase(userDetails.getUsername()).orElseThrow(()->new UserNotFoundException());
 
 
         return new ResponseEntity<>( userService.getUserProfile(user), HttpStatus.OK);
@@ -225,7 +226,7 @@ public class AuthenticationController {
     @PostMapping("/logout")
     public ResponseEntity<LogoutResponseDTO> logoutUser(@AuthenticationPrincipal User userDetails)
     {
-        LocalUser user = localUserRepo.findByUserNameIgnoreCase(userDetails.getUsername()).orElseThrow();
+        LocalUser user = localUserRepo.findByUserNameIgnoreCase(userDetails.getUsername()).orElseThrow(()->new UserNotFoundException());
 
         return new ResponseEntity<LogoutResponseDTO>( userService.logoutUser(user), HttpStatus.OK);
     }

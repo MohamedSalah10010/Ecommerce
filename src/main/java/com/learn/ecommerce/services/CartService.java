@@ -17,7 +17,7 @@ import com.learn.ecommerce.repository.ProductRepo;
 import com.learn.ecommerce.utils.CartStatus;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
-import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -90,6 +90,20 @@ public class CartService {
         return newCart;
     }
 
+    public CartDTO createNewCartForUser(LocalUser user) {
+        Cart newCart = new Cart();
+        newCart.setUser(user);
+        newCart.setStatus(CartStatus.ACTIVE);
+        newCart.setDeleted(false);
+        cartRepo.save(newCart);
+
+        return new CartDTO().builder()
+                .id(newCart.getId())
+                .status(newCart.getStatus())
+                .totalPrice(0)
+                .build();
+    }
+
     private List<ItemDTO> mappingListItemDTO(Cart cart) {
         List<ItemDTO> itemListDTO = new ArrayList<>();
         for (CartItem item : cart.getItems()) {
@@ -151,61 +165,17 @@ public class CartService {
                 .statusMessage("Item added successfully")
                 .build();
     }
-/*
-    //    public CartStatusDTO addItemToCart(LocalUser user, AddItemDTO item) {
-//
-//        Optional<Cart> cartOptional = cartRepo.findByUserId(user.getId());
-//        if (cartOptional.get().getStatus() == CartStatus.CHECKED_OUT) {
-//            throw new IllegalStateException("Cannot modify a checked-out cart");
-//        }
-//        if (!cartOptional.isPresent() || cartOptional.get().isDeleted()) {
-//            Cart cart = createNewCart(user);
-//            CartItem cartItem = createNewCartItem(item.getProductId(), item.getQuantity(), cart);
-//            cart.getItems().add(cartItem);
-//            cartItemRepo.save(cartItem);
-//
-//            List<ItemDTO> itemListDTO = mappingListItemDTO(cart);
-//            return new CartStatusDTO().builder()
-//                    .id(cart.getId())
-//                    .items(itemListDTO)
-//                    .statusMessage("Item been added successfully")
-//                    .build();
-//        }
-//
-//        Cart cart = cartOptional.get();
-//        Product product = productRepo.findById(item.getProductId()).orElseThrow(ProductNotFoundException::new);
-//        CartItem cartItem = new CartItem();
-//        Optional<CartItem> existingItem =
-//                cartItemRepo.findByCartAndProduct(cart, product);
-//        if (existingItem.isPresent()) {
-//            cartItem = existingItem.get();
-//            cartItem.setQuantity(cartItem.getQuantity() + item.getQuantity());
-//        } else {
-//            cartItem = createNewCartItem(item.getProductId(), item.getQuantity(), cart);
-//            cart.getItems().add(cartItem);
-//
-//        }
-//        cartItemRepo.save(cartItem);
-//        List<ItemDTO> itemListDTO = mappingListItemDTO(cart);
-//        return new CartStatusDTO().builder()
-//                .id(cart.getId())
-//                .items(itemListDTO)
-//                .statusMessage("Item been added successfully")
-//                .build();
-//    }
-  */
 
     @Transactional
-    public CartDTO checkoutCart(Cart cart) {
+    public CartDTO checkoutCart(LocalUser user,Long cartId) {
 
+        Cart cart = cartRepo.findByUserIdAndCartId(user.getId(), cartId).orElseThrow( ()-> new CartIsEmptyException("Cart items is empty, can't checkout cart"));
         if(cart.getStatus()!= CartStatus.ACTIVE) {
             throw new IllegalStateException("Cart status is not ACTIVE, can't checkout cart");
         }
-        if(cart.getItems().isEmpty()) {
-            throw new CartIsEmptyException("Cart items is empty, can't checkout cart");
-        }
 
         for (CartItem item : cart.getItems()) {
+            if(item.isDeleted()) continue;
             Inventory inventory = item.getProduct().getInventory();
 
             if (inventory.getQuantity() < item.getQuantity()) {
@@ -241,18 +211,19 @@ public class CartService {
     @Transactional
     public CartStatusDTO updateCartItemQuantity(LocalUser user,Long itemId, UpdateQuantityDTO updateQuantityDTO) {
 
+        Cart cart = cartRepo.findByUserIdAndStatus(user.getId(), CartStatus.ACTIVE)
+                .orElseThrow(() -> new AccessDeniedException("No active cart"));
 
-       Optional<CartItem> cartItemOptional = cartItemRepo.findById(itemId);
-       if(!cartItemOptional.isPresent()) {
-           throw new ItemNotFoundException("item isn't found ");
+        CartItem cartItem = cartItemRepo
+                .findByItemIdAndCartId(itemId, cart.getId())
+                .orElseThrow(() -> new ItemNotFoundException("Item not found"));
+
+
+       if(updateQuantityDTO.getQuantity() == 0) {
+           return deleteCartItem(user, itemId);
        }
-       CartItem cartItem = cartItemOptional.get();
-       if(cartItem.getCart().getUser().getId() != user.getId()) {
-           throw new AuthenticationServiceException("this user can't access the cart");
-       }
-       if(updateQuantityDTO.getQuantity() == 0) { deleteCartItem(user,cartItem.getCart(), itemId); }
        cartItem.setQuantity(updateQuantityDTO.getQuantity());
-        cartItemRepo.save(cartItem);
+       cartItemRepo.save(cartItem);
        List<ItemDTO> items= mappingListItemDTO(cartItem.getCart());
         return new CartStatusDTO().builder().statusMessage("Item updated successfully").items(items).build();
 
@@ -262,22 +233,39 @@ public class CartService {
 
 
     @Transactional
-    public CartStatusDTO deleteCartItem(LocalUser user,Cart cart,Long cartItemId) {
+    public CartStatusDTO deleteCartItem(LocalUser user,Long cartItemId) {
 
-        Optional<CartItem> cartItemOptional =cartItemRepo.findById(cartItemId);
-        if(cartItemOptional.isPresent()) {
-            if(cartItemOptional.get().getCart().getUser().getId() != user.getId()) {
-                throw new AuthenticationServiceException("this user can't access the cart");
-            }
-            CartItem cartItem = cartItemOptional.get();
-            cartItem.setDeleted(true);
-            cart.getItems().remove(cartItem);
-            cartRepo.save(cart);
+        Cart cart = cartRepo.findByUserIdAndStatus(user.getId(), CartStatus.ACTIVE)
+                .orElseThrow(() -> new AccessDeniedException("No active cart"));
+
+        CartItem cartItem = cartItemRepo
+                .findByItemIdAndCartId(cartItemId, cart.getId())
+                .orElseThrow(() -> new ItemNotFoundException("Item not found"));
+
+        cartItem.setDeleted(true);
+        cart.getItems().remove(cartItem);
+
+        // not needed because of the @Transactional annotation, but I do it anyway
+            cartRepo.save(cartItem.getCart());
             cartItemRepo.save(cartItem);
+
             return new CartStatusDTO().builder().statusMessage("Item deleted successfully").build();
 
-        }
-        throw new CartIsEmptyException("Cart item id not found, can't delete cartItem");
+       }
+
+    @Transactional
+    public CartStatusDTO deleteCart(LocalUser user) {
+
+        Cart cart = cartRepo.findByUserIdAndStatus(user.getId(), CartStatus.ACTIVE)
+                .orElseThrow(() -> new AccessDeniedException("No active cart"));
+
+        cart.setDeleted(true);
+        cart.getItems().forEach(item -> item.setDeleted(true));
+
+        // not needed because of the @Transactional annotation, but I do it anyway
+        cartRepo.save(cart);
+        return new CartStatusDTO().builder().statusMessage("Item deleted successfully").build();
+
     }
 }
 

@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
                 .builder()
                 .errorStatus(HttpStatus.FORBIDDEN)
                 .errorDescription(request.getDescription(true))
-                .errorMessage("You do not have permission to access this resource")
+                .errorMessage(ex.getMessage())
                 .errorTimestamp(LocalDateTime.now())
                 .build(), HttpStatus.FORBIDDEN);
 

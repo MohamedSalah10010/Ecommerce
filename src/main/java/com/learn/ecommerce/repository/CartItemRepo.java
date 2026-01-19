@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface CartItemRepo extends CrudRepository<CartItem,Long> {
 
 Optional<CartItem> findByCartAndProduct(Cart cart, Product product);
+Optional<CartItem> findByItemIdAndCartId(Long itemId,Long cartId);
+
 }
