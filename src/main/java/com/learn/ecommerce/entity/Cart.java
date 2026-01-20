@@ -2,8 +2,7 @@ package com.learn.ecommerce.entity;
 
 import com.learn.ecommerce.utils.CartStatus;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.util.ArrayList;
@@ -12,6 +11,9 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "cart")
 public class Cart extends BaseAuditEntity{
     @Id
