@@ -223,6 +223,17 @@ public class GlobalExceptionHandler {
                 .build(), HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler
+    public ResponseEntity<?> handleAddressNotFoundException(AddressNotFoundException ex, WebRequest request) {
+        logError("Address not found", ex);
+        return new ResponseEntity<>(ErrorResponseDTO
+                .builder()
+                .errorStatus(HttpStatus.NOT_FOUND)
+                .errorDescription(request.getDescription(true))
+                .errorMessage(ex.getMessage())
+                .errorTimestamp(LocalDateTime.now())
+                .build(), HttpStatus.NOT_FOUND);
+    }
     private void logError(String message, Exception ex) {
         log.error(message, ex);
         ex.printStackTrace();

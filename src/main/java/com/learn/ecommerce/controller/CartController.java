@@ -3,7 +3,6 @@ package com.learn.ecommerce.controller;
 
 import com.learn.ecommerce.DTO.Cart.CartDTO;
 import com.learn.ecommerce.DTO.Cart.CartStatusDTO;
-import com.learn.ecommerce.DTO.Cart.UpdateQuantityDTO;
 import com.learn.ecommerce.DTO.CartItem.AddItemDTO;
 import com.learn.ecommerce.entity.LocalUser;
 import com.learn.ecommerce.exceptionhandler.UserNotFoundException;
@@ -52,11 +51,6 @@ public class CartController {
         LocalUser user = localUserRepo.findByUserNameIgnoreCase(userDetails.getUsername()).orElseThrow(() -> new UserNotFoundException());
         return new ResponseEntity<>(cartService.addItemToCart(user,body), HttpStatus.OK);
 
-    }
-    @PutMapping("/update-item-quantity/{itemId}")
-    public ResponseEntity<CartStatusDTO> updateItemQuantity(@AuthenticationPrincipal User userDetails,@PathVariable Long itemId, @RequestBody UpdateQuantityDTO body) {
-        LocalUser user = localUserRepo.findByUserNameIgnoreCase(userDetails.getUsername()).orElseThrow(() -> new UserNotFoundException());
-        return new ResponseEntity<>(cartService.updateCartItemQuantity(user,itemId,body), HttpStatus.OK);
     }
 
     @DeleteMapping("/delete-item/{itemId}")

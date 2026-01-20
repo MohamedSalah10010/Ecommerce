@@ -8,6 +8,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductRepo extends CrudRepository<Product,Long>, JpaSpecificationExecutor<Product> {
 
@@ -21,4 +22,7 @@ public interface ProductRepo extends CrudRepository<Product,Long>, JpaSpecificat
 
     )
     List<Product> searchByName(@Param("query") String query);
+
+    Optional<Product> findByIdAndIsDeletedFalse(Long productId);
+
 }
