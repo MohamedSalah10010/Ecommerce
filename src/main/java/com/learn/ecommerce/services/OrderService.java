@@ -52,15 +52,22 @@ public class OrderService {
     // -------------------------
     @Transactional
     public OrderDTO placeOrderFromCart(LocalUser user, Long addressId) {
+        log.info("Placing order for user={} with addressId={}", user.getUsername(), addressId);
 
         Address address = addressRepo.findById(addressId)
-                .orElseThrow(() -> new UserNotFoundException());
+                .orElseThrow(() -> {
+                    log.warn("Address not found for addressId={}", addressId);
+                    return new UserNotFoundException();
+                });
 
-        // Get active cart
         Cart cart = cartRepo.findByUserIdAndStatus(user.getId(), com.learn.ecommerce.utils.CartStatus.ACTIVE)
-                .orElseThrow(() -> new AccessDeniedException("No active cart found"));
+                .orElseThrow(() -> {
+                    log.warn("No active cart found for user={}", user.getUsername());
+                    return new AccessDeniedException("No active cart found");
+                });
 
         if (cart.getItems().isEmpty()) {
+            log.warn("Cart is empty for user={}", user.getUsername());
             throw new ItemNotFoundException("Cart is empty");
         }
 
@@ -78,8 +85,9 @@ public class OrderService {
             if (cartItem.isDeleted()) continue;
 
             Inventory inventory = cartItem.getProduct().getInventory();
-
             if (inventory.getQuantity() < cartItem.getQuantity()) {
+                log.warn("Insufficient stock for product={} requested={} available={}",
+                        cartItem.getProduct().getName(), cartItem.getQuantity(), inventory.getQuantity());
                 throw new InsufficientStockException();
             }
 
@@ -87,7 +95,6 @@ public class OrderService {
             inventory.setQuantity(inventory.getQuantity() - cartItem.getQuantity());
             inventoryRepo.save(inventory);
 
-            // Create order item
             OrderItem orderItem = OrderItem.builder()
                     .product(cartItem.getProduct())
                     .quantity(cartItem.getQuantity())
@@ -103,10 +110,12 @@ public class OrderService {
         orderRepo.save(order);
         orderItemRepo.saveAll(orderItems);
 
-        // Mark cart items as deleted
         cart.getItems().forEach(item -> item.setDeleted(true));
         cart.setDeleted(true);
         cartRepo.save(cart);
+
+        log.info("Order placed successfully for user={} orderId={} totalPrice={}",
+                user.getUsername(), order.getId(), totalPrice);
 
         return mapToDTO(order);
     }
@@ -115,7 +124,11 @@ public class OrderService {
     // Get orders for a user
     // -------------------------
     public List<OrderDTO> getOrdersForUser(LocalUser user) {
+        log.info("Fetching orders for user={}", user.getUsername());
+
         List<WebOrder> orders = orderRepo.findByUserIdAndIsDeletedFalse(user.getId());
+        log.info("Found {} orders for user={}", orders.size(), user.getUsername());
+
         return orders.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
@@ -123,13 +136,20 @@ public class OrderService {
     // Get single order
     // -------------------------
     public OrderDTO getOrderById(LocalUser user, Long orderId) {
+        log.info("Fetching orderId={} for user={}", orderId, user.getUsername());
+
         WebOrder order = orderRepo.findById(orderId)
-                .orElseThrow(() -> new ItemNotFoundException("Order not found"));
+                .orElseThrow(() -> {
+                    log.warn("Order not found: orderId={}", orderId);
+                    return new ItemNotFoundException("Order not found");
+                });
 
         if (!order.getUser().getId().equals(user.getId())) {
+            log.warn("Access denied: user={} tried to access orderId={}", user.getUsername(), orderId);
             throw new AccessDeniedException("You cannot access this order");
         }
 
+        log.info("Order fetched successfully: orderId={} for user={}", orderId, user.getUsername());
         return mapToDTO(order);
     }
 
