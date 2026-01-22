@@ -3,11 +3,12 @@ package com.learn.ecommerce.services;
 import com.learn.ecommerce.DTO.Order.OrderDTO;
 import com.learn.ecommerce.DTO.Order.OrderItemDTO;
 import com.learn.ecommerce.entity.*;
+import com.learn.ecommerce.enums.CartStatus;
+import com.learn.ecommerce.enums.OrderStatus;
 import com.learn.ecommerce.exceptionhandler.InsufficientStockException;
 import com.learn.ecommerce.exceptionhandler.ItemNotFoundException;
 import com.learn.ecommerce.exceptionhandler.UserNotFoundException;
 import com.learn.ecommerce.repository.*;
-import com.learn.ecommerce.utils.OrderStatus;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -60,7 +61,7 @@ public class OrderService {
                     return new UserNotFoundException();
                 });
 
-        Cart cart = cartRepo.findByUserIdAndStatus(user.getId(), com.learn.ecommerce.utils.CartStatus.ACTIVE)
+        Cart cart = cartRepo.findByUserIdAndStatus(user.getId(), CartStatus.ACTIVE)
                 .orElseThrow(() -> {
                     log.warn("No active cart found for user={}", user.getUsername());
                     return new AccessDeniedException("No active cart found");

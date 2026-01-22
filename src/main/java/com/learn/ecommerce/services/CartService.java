@@ -6,6 +6,7 @@ import com.learn.ecommerce.DTO.Cart.UpdateQuantityDTO;
 import com.learn.ecommerce.DTO.CartItem.AddItemDTO;
 import com.learn.ecommerce.DTO.CartItem.ItemDTO;
 import com.learn.ecommerce.entity.*;
+import com.learn.ecommerce.enums.CartStatus;
 import com.learn.ecommerce.exceptionhandler.CartIsEmptyException;
 import com.learn.ecommerce.exceptionhandler.InsufficientStockException;
 import com.learn.ecommerce.exceptionhandler.ItemNotFoundException;
@@ -14,7 +15,6 @@ import com.learn.ecommerce.repository.CartItemRepo;
 import com.learn.ecommerce.repository.CartRepo;
 import com.learn.ecommerce.repository.InventoryRepo;
 import com.learn.ecommerce.repository.ProductRepo;
-import com.learn.ecommerce.utils.CartStatus;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -141,7 +141,7 @@ public class CartService {
 
     @Transactional
     public CartDTO checkoutCart(LocalUser user, Long cartId) {
-        Cart cart = cartRepo.findByUserIdAndCartId(user.getId(), cartId)
+        Cart cart = cartRepo.findByUserIdAndId(user.getId(), cartId)
                 .orElseThrow(() -> {
                     log.warn("No cart {} found for checkout for user {}", cartId, user.getId());
                     return new CartIsEmptyException("Cart items is empty, can't checkout cart");
@@ -179,7 +179,7 @@ public class CartService {
                     return new AccessDeniedException("No active cart");
                 });
 
-        CartItem cartItem = cartItemRepo.findByItemIdAndCartId(itemId, cart.getId())
+        CartItem cartItem = cartItemRepo.findByIdAndCartId(itemId, cart.getId())
                 .orElseThrow(() -> {
                     log.warn("Cart item {} not found in cart {}", itemId, cart.getId());
                     return new ItemNotFoundException("Item not found");
@@ -208,7 +208,7 @@ public class CartService {
                     return new AccessDeniedException("No active cart");
                 });
 
-        CartItem cartItem = cartItemRepo.findByItemIdAndCartId(cartItemId, cart.getId())
+        CartItem cartItem = cartItemRepo.findByIdAndCartId(cartItemId, cart.getId())
                 .orElseThrow(() -> {
                     log.warn("Cart item {} not found in cart {}", cartItemId, cart.getId());
                     return new ItemNotFoundException("Item not found");

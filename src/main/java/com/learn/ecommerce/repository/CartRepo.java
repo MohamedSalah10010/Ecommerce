@@ -2,7 +2,7 @@ package com.learn.ecommerce.repository;
 
 import com.learn.ecommerce.entity.Cart;
 import com.learn.ecommerce.entity.LocalUser;
-import com.learn.ecommerce.utils.CartStatus;
+import com.learn.ecommerce.enums.CartStatus;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
@@ -15,5 +15,5 @@ public interface CartRepo extends CrudRepository<Cart,Long> {
     Optional<Cart> findByUserId(Long id);
 
     Optional<Cart> findByUserIdAndStatus(Long id, CartStatus cartStatus);
-    Optional<Cart> findByUserIdAndCartId(Long id, Long cartId);
+    Optional<Cart> findByUserIdAndId(Long id, Long cartId);
 }

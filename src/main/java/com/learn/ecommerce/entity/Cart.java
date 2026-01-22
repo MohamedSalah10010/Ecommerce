@@ -1,6 +1,6 @@
 package com.learn.ecommerce.entity;
 
-import com.learn.ecommerce.utils.CartStatus;
+import com.learn.ecommerce.enums.CartStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
@@ -18,7 +18,7 @@ import java.util.List;
 public class Cart extends BaseAuditEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
+    @Column(name = "cart_id", nullable = false)
     private Long id;
 
 

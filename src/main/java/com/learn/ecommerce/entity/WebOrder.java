@@ -1,6 +1,6 @@
 package com.learn.ecommerce.entity;
 
-import com.learn.ecommerce.utils.OrderStatus;
+import com.learn.ecommerce.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
 

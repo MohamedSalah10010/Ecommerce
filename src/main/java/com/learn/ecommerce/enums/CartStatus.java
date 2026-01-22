@@ -1,4 +1,4 @@
-package com.learn.ecommerce.utils;
+package com.learn.ecommerce.enums;
 
 public enum CartStatus {
     ACTIVE,

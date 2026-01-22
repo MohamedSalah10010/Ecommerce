@@ -6,8 +6,8 @@ import com.learn.ecommerce.DTO.CategoryDTO.CategoryStatusDTO;
 import com.learn.ecommerce.entity.Category;
 import com.learn.ecommerce.exceptionhandler.CategoryNotFoundException;
 import com.learn.ecommerce.repository.CategoryRepo;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,10 +18,10 @@ import java.util.List;
 @Slf4j
 @Service
 @Getter
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class CategoryService {
 
-    private CategoryRepo categoryRepo;
+    private final CategoryRepo categoryRepo;
 
     public CategoryDTO getCategoryById(long id) {
         Category category = categoryRepo.findById(id).orElse(null);
@@ -39,11 +39,11 @@ public class CategoryService {
 
     public List<CategoryDTO> getAllCategories() {
         List<CategoryDTO> categoriesDTO = new ArrayList<>();
-        List<Category> categories = (List<Category>) categoryRepo.findAll();
-        if (categories.isEmpty()) {
-            log.warn("No categories found in database");
-            throw new CategoryNotFoundException();
-        }
+        List<Category> categories =  categoryRepo.findAll();
+//        if (categories.isEmpty()) {
+//            log.warn("No categories found in database");
+//            throw new CategoryNotFoundException();
+//        }
         for (Category category : categories) {
             if (category.isDeleted())
                 continue;

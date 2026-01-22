@@ -2,7 +2,7 @@ package com.learn.ecommerce.DTO.Cart;
 
 
 import com.learn.ecommerce.DTO.CartItem.ItemDTO;
-import com.learn.ecommerce.utils.CartStatus;
+import com.learn.ecommerce.enums.CartStatus;
 import lombok.*;
 
 import java.util.List;
