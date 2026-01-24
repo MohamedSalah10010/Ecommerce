@@ -7,7 +7,6 @@ import com.learn.ecommerce.DTO.UserResponseDTO.LogoutResponseDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.UserDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.UserStatusDTO;
 import com.learn.ecommerce.entity.LocalUser;
-import com.learn.ecommerce.exceptionhandler.UserNotFoundException;
 import com.learn.ecommerce.repository.LocalUserRepo;
 import com.learn.ecommerce.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,7 +23,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -90,11 +88,9 @@ public class AuthenticationController {
     })
     @GetMapping("/me")
     @RolesAllowed({"USER", "ADMIN"}) // Both roles can access
-    public ResponseEntity<@NotNull UserDTO> getLoggedInUserProfile(@AuthenticationPrincipal User userDetails) {
-        log.info("Fetching profile for user: {}", userDetails.getUsername());
-        LocalUser user = localUserRepo.findByUserNameIgnoreCase(userDetails.getUsername())
-                .orElseThrow(UserNotFoundException::new);
-        UserDTO profile = userService.getUserProfile(user);
+    public ResponseEntity<@NotNull UserDTO> getLoggedInUserProfile(@AuthenticationPrincipal LocalUser user) {
+        log.info("Fetching profile for user: {}", user.getUsername());
+	    UserDTO profile = userService.getUserProfile(user);
         log.info("Profile fetched for user: {}", user.getUsername());
         return ResponseEntity.ok(profile);
     }
@@ -172,10 +168,8 @@ public class AuthenticationController {
     @Operation(summary = "Logout user", description = "Logs out the currently authenticated user")
     @PostMapping("/logout")
     @RolesAllowed({"USER", "ADMIN"})
-    public ResponseEntity<@NotNull LogoutResponseDTO> logoutUser(@AuthenticationPrincipal User userDetails) {
-        log.info("Logging out user: {}", userDetails.getUsername());
-        LocalUser user = localUserRepo.findByUserNameIgnoreCase(userDetails.getUsername())
-                .orElseThrow(UserNotFoundException::new);
+    public ResponseEntity<@NotNull LogoutResponseDTO> logoutUser(@AuthenticationPrincipal LocalUser user) {
+        log.info("Logging out user: {}", user.getUsername());
         LogoutResponseDTO logoutResponse = userService.logoutUser(user);
         log.info("User logged out: {}", user.getUsername());
         return ResponseEntity.ok(logoutResponse);
