@@ -3,7 +3,6 @@ package com.learn.ecommerce.controller.order;
 import com.learn.ecommerce.DTO.ErrorResponseDTO;
 import com.learn.ecommerce.DTO.Order.OrderDTO;
 import com.learn.ecommerce.entity.LocalUser;
-import com.learn.ecommerce.exceptionhandler.UserNotFoundException;
 import com.learn.ecommerce.repository.LocalUserRepo;
 import com.learn.ecommerce.services.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,10 +15,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -60,13 +59,11 @@ public class OrderController {
     })
     @PostMapping("/place")
     @RolesAllowed({"ROLE_USER", "ROLE_ADMIN"})
-    public ResponseEntity<OrderDTO> placeOrder(
-            @AuthenticationPrincipal User userDetails,
+    public ResponseEntity<@NotNull OrderDTO> placeOrder(
+            @AuthenticationPrincipal LocalUser user,
             @RequestParam Long addressId
     ) {
-        log.info("User {} attempting to place an order with addressId {}", userDetails.getUsername(), addressId);
-        LocalUser user = localUserRepo.findByUserNameIgnoreCase(userDetails.getUsername())
-                .orElseThrow(UserNotFoundException::new);
+        log.info("User {} attempting to place an order with addressId {}", user.getUsername(), addressId);
 
         OrderDTO orderDTO = orderService.placeOrderFromCart(user, addressId);
         log.info("Order placed successfully for user {}. Order ID: {}", user.getUsername(), orderDTO.getId());
@@ -89,10 +86,8 @@ public class OrderController {
     })
     @GetMapping("/my-orders")
     @RolesAllowed({"ROLE_USER", "ROLE_ADMIN"})
-    public ResponseEntity<List<OrderDTO>> getUserOrders(@AuthenticationPrincipal User userDetails) {
-        log.info("Fetching all orders for user: {}", userDetails.getUsername());
-        LocalUser user = localUserRepo.findByUserNameIgnoreCase(userDetails.getUsername())
-                .orElseThrow(UserNotFoundException::new);
+    public ResponseEntity<@NotNull List<OrderDTO>> getUserOrders(@AuthenticationPrincipal LocalUser user) {
+        log.info("Fetching all orders for user: {}", user.getUsername());
 
         List<OrderDTO> orders = orderService.getOrdersForUser(user);
         log.info("Retrieved {} orders for user: {}", orders.size(), user.getUsername());
@@ -115,13 +110,12 @@ public class OrderController {
     })
     @GetMapping("/{orderId}")
     @RolesAllowed({"ROLE_USER", "ROLE_ADMIN"})
-    public ResponseEntity<OrderDTO> getOrderById(
-            @AuthenticationPrincipal User userDetails,
+    public ResponseEntity<@NotNull OrderDTO> getOrderById(
+            @AuthenticationPrincipal LocalUser user,
             @PathVariable Long orderId
     ) {
-        log.info("Fetching order ID {} for user: {}", orderId, userDetails.getUsername());
-        LocalUser user = localUserRepo.findByUserNameIgnoreCase(userDetails.getUsername())
-                .orElseThrow(UserNotFoundException::new);
+        log.info("Fetching order ID {} for user: {}", orderId, user.getUsername());
+
 
         OrderDTO order = orderService.getOrderById(user, orderId);
         log.info("Order ID {} retrieved for user: {}", orderId, user.getUsername());

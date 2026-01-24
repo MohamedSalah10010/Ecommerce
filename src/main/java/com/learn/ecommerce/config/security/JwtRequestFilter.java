@@ -10,9 +10,9 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -47,9 +47,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
+		    HttpServletRequest request,
+		    @NotNull HttpServletResponse response,
+		    @NotNull FilterChain filterChain
     ) throws ServletException, IOException {
         String path = request.getServletPath();
         // Skip JWT filter for login & register
@@ -107,17 +107,17 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
             LocalUser user = userOpt.get();
 
-            // Wrap LocalUser into Spring Security UserDetails
-            User userDetails = (User) User.builder()
-                    .username(user.getUsername())
-                    .password(user.getPassword())
-                    .authorities(user.getAuthorities())
-                    .accountLocked(!user.isAccountNonLocked())
-                    .disabled(!user.isEnabled())
-                    .build();
+//            // Wrap LocalUser into Spring Security UserDetails
+//            User userDetails = (User) User.builder()
+//                    .username(user.getUsername())
+//                    .password(user.getPassword())
+//                    .authorities(user.getAuthorities())
+//                    .accountLocked(!user.isAccountNonLocked())
+//                    .disabled(!user.isEnabled())
+//                    .build();
 
             UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
 
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);

@@ -86,7 +86,7 @@ public class UserService {
     public UserDTO getUserProfile(LocalUser user) {
         log.info("Fetching profile for userId={}", user.getId());
 
-        LocalUser localUser = userRepository.findByIdAndIsDeleted(user.getId(),true)
+        LocalUser localUser = userRepository.findByIdAndIsDeleted(user.getId(),false)
                 .orElseThrow(() -> {
                     log.warn("User not found: id={}", user.getId());
                     return new UserNotFoundException("user not found");

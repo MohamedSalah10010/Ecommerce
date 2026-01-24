@@ -5,7 +5,6 @@ import com.learn.ecommerce.DTO.Cart.CartStatusDTO;
 import com.learn.ecommerce.DTO.CartItem.AddItemDTO;
 import com.learn.ecommerce.DTO.ErrorResponseDTO;
 import com.learn.ecommerce.entity.LocalUser;
-import com.learn.ecommerce.exceptionhandler.UserNotFoundException;
 import com.learn.ecommerce.repository.LocalUserRepo;
 import com.learn.ecommerce.services.CartService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,11 +17,11 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -52,9 +51,7 @@ public class CartController {
     })
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_USER')")
     @GetMapping("/get")
-    public ResponseEntity<CartDTO> getCart(@AuthenticationPrincipal User userDetails) {
-        LocalUser user = localUserRepo.findByUserNameIgnoreCase(userDetails.getUsername())
-                .orElseThrow(UserNotFoundException::new);
+    public ResponseEntity<@NotNull CartDTO> getCart(@AuthenticationPrincipal LocalUser user) {
 
         log.info("Fetching active cart for user: {}", user.getUsername());
         return ResponseEntity.ok(cartService.getCurrentActiveCart(user));
@@ -71,9 +68,8 @@ public class CartController {
     })
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_USER')")
     @PostMapping("/create-cart")
-    public ResponseEntity<CartDTO> createCart(@AuthenticationPrincipal User userDetails) {
-        LocalUser user = localUserRepo.findByUserNameIgnoreCase(userDetails.getUsername())
-                .orElseThrow(UserNotFoundException::new);
+    public ResponseEntity<@NotNull CartDTO> createCart(@AuthenticationPrincipal LocalUser user) {
+
 
         log.info("Creating new cart for user: {}", user.getUsername());
         return new ResponseEntity<>(cartService.createNewCartForUser(user), HttpStatus.CREATED);
@@ -90,15 +86,13 @@ public class CartController {
     })
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_USER')")
     @PostMapping("/add-item")
-    public ResponseEntity<CartStatusDTO> addItemToCart(
-            @AuthenticationPrincipal User userDetails,
+    public ResponseEntity<@NotNull CartStatusDTO> addItemToCart(
+            @AuthenticationPrincipal LocalUser user,
             @Parameter(description = "Item to add") @RequestBody AddItemDTO body
     ) {
-        LocalUser user = localUserRepo.findByUserNameIgnoreCase(userDetails.getUsername())
-                .orElseThrow(UserNotFoundException::new);
 
-        log.info("Adding item (productId={}, quantity={}) to cart for user: {}",
-                body.getProductId(), body.getQuantity(), user.getUsername());
+
+        log.info("Adding item (productId={}, quantity={}) to cart for user: {}",body.getProductId(), body.getQuantity(), user.getUsername());
 
         return ResponseEntity.ok(cartService.addItemToCart(user, body));
     }
@@ -114,12 +108,10 @@ public class CartController {
     })
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_USER')")
     @DeleteMapping("/delete-item/{itemId}")
-    public ResponseEntity<CartStatusDTO> deleteItemFromCart(
-            @AuthenticationPrincipal User userDetails,
+    public ResponseEntity<@NotNull CartStatusDTO> deleteItemFromCart(
+            @AuthenticationPrincipal LocalUser user,
             @Parameter(description = "ID of the item to remove") @PathVariable Long itemId
     ) {
-        LocalUser user = localUserRepo.findByUserNameIgnoreCase(userDetails.getUsername())
-                .orElseThrow(UserNotFoundException::new);
 
         log.warn("Deleting item id={} from cart for user: {}", itemId, user.getUsername());
         return ResponseEntity.ok(cartService.deleteCartItem(user, itemId));
@@ -136,9 +128,8 @@ public class CartController {
     })
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_USER')")
     @DeleteMapping("/delete-cart")
-    public ResponseEntity<CartStatusDTO> deleteCart(@AuthenticationPrincipal User userDetails) {
-        LocalUser user = localUserRepo.findByUserNameIgnoreCase(userDetails.getUsername())
-                .orElseThrow(UserNotFoundException::new);
+    public ResponseEntity<@NotNull CartStatusDTO> deleteCart(@AuthenticationPrincipal LocalUser user) {
+
 
         log.warn("Deleting entire cart for user: {}", user.getUsername());
         return ResponseEntity.ok(cartService.deleteCart(user));
