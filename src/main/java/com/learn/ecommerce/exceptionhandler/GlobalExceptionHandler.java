@@ -71,7 +71,7 @@ public class GlobalExceptionHandler {
                 .builder()
                 .errorStatus(HttpStatus.CONFLICT)
                 .errorDescription(request.getDescription(true))
-                .errorMessage("User with given email already exists")
+                .errorMessage(ex.getMessage())
                 .errorTimestamp(LocalDateTime.now())
                 .build(), HttpStatus.CONFLICT);
 
@@ -84,7 +84,7 @@ public class GlobalExceptionHandler {
                 .builder()
                 .errorStatus(HttpStatus.FORBIDDEN)
                 .errorDescription(request.getDescription(true))
-                .errorMessage("User email is not verified.")
+                .errorMessage(ex.getMessage())
                 .errorTimestamp(LocalDateTime.now())
                 .build(), HttpStatus.FORBIDDEN);
     }
@@ -96,7 +96,7 @@ public class GlobalExceptionHandler {
                 .builder()
                 .errorStatus(HttpStatus.NOT_FOUND)
                 .errorDescription(request.getDescription(true))
-                .errorMessage("User not found")
+                .errorMessage(ex.getMessage())
                 .errorTimestamp(LocalDateTime.now())
                 .build(), HttpStatus.NOT_FOUND);
     }
@@ -108,7 +108,7 @@ public class GlobalExceptionHandler {
                 .builder()
                 .errorStatus(HttpStatus.NOT_FOUND)
                 .errorDescription(request.getDescription(true))
-                .errorMessage("Token not found ")
+                .errorMessage(ex.getMessage())
                 .errorTimestamp(LocalDateTime.now())
                 .build(), HttpStatus.NOT_FOUND);
     }
@@ -120,7 +120,7 @@ public class GlobalExceptionHandler {
                 .builder()
                 .errorStatus(HttpStatus.UNAUTHORIZED)
                 .errorDescription(request.getDescription(true))
-                .errorMessage("Token has expired")
+                .errorMessage(ex.getMessage())
                 .errorTimestamp(LocalDateTime.now())
                 .build(), HttpStatus.UNAUTHORIZED);
     }
@@ -132,7 +132,7 @@ public class GlobalExceptionHandler {
                 .builder()
                 .errorStatus(HttpStatus.UNAUTHORIZED)
                 .errorDescription(request.getDescription(true))
-                .errorMessage("Invalid username or password")
+                .errorMessage(ex.getMessage())
                 .errorTimestamp(LocalDateTime.now())
                 .build(), HttpStatus.UNAUTHORIZED);
     }
@@ -144,7 +144,7 @@ public class GlobalExceptionHandler {
                 .builder()
                 .errorStatus(HttpStatus.BAD_REQUEST)
                 .errorDescription(request.getDescription(true))
-                .errorMessage("Password and confirm password do not match")
+                .errorMessage(ex.getMessage())
                 .errorTimestamp(LocalDateTime.now())
                 .build(), HttpStatus.BAD_REQUEST);
     }
@@ -156,7 +156,7 @@ public class GlobalExceptionHandler {
                 .builder()
                 .errorStatus(HttpStatus.NOT_FOUND)
                 .errorDescription(request.getDescription(true))
-                .errorMessage("Product not found")
+                .errorMessage(ex.getMessage())
                 .errorTimestamp(LocalDateTime.now())
                 .build(), HttpStatus.NOT_FOUND);
     }
@@ -168,7 +168,7 @@ public class GlobalExceptionHandler {
                 .builder()
                 .errorStatus(HttpStatus.NOT_FOUND)
                 .errorDescription(request.getDescription(true))
-                .errorMessage("Category not found")
+                .errorMessage(ex.getMessage())
                 .errorTimestamp(LocalDateTime.now())
                 .build(), HttpStatus.NOT_FOUND);
     }
@@ -180,7 +180,7 @@ public class GlobalExceptionHandler {
                 .builder()
                 .errorStatus(HttpStatus.FORBIDDEN)
                 .errorDescription(request.getDescription(true))
-                .errorMessage("insufficient stock for the product quantity")
+                .errorMessage(ex.getMessage())
                 .errorTimestamp(LocalDateTime.now())
                 .build(), HttpStatus.FORBIDDEN);
     }

@@ -1,16 +1,19 @@
 package com.learn.ecommerce.DTO.UserRequestDTO;
 
 
+import com.learn.ecommerce.DTO.Address.AddAdressDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
-@Setter
+@Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class EditUserBody {
 
     @Email
@@ -30,5 +33,6 @@ public class EditUserBody {
     private String username;
     private String firstName;
     private String lastName;
+	private AddAdressDTO address;
 
 }

@@ -8,7 +8,7 @@ import java.util.List;
 
 public class ObjectMapperUtils {
 
-    private static ModelMapper modelMapper;
+    private static final ModelMapper modelMapper;
 
 
     static {

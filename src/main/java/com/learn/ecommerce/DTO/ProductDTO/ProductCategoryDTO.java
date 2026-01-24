@@ -1,13 +1,14 @@
 package com.learn.ecommerce.DTO.ProductDTO;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
 @Builder
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class ProductCategoryDTO {
      private Long     productId;
      private String   productName;

@@ -4,17 +4,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.learn.ecommerce.entity.Address;
 import com.learn.ecommerce.entity.UserRoles;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.Collection;
 
 @Schema(description = "User profile information")
+@Data
 @Builder
-@Getter
-@Setter
 @AllArgsConstructor
-@RequiredArgsConstructor
+@NoArgsConstructor
 public class UserDTO {
 
     @Schema(example = "1")

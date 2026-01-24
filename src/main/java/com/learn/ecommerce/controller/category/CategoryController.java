@@ -1,8 +1,8 @@
 package com.learn.ecommerce.controller.category;
 
-import com.learn.ecommerce.DTO.CategoryDTO.AddCategoryDTO;
-import com.learn.ecommerce.DTO.CategoryDTO.CategoryDTO;
-import com.learn.ecommerce.DTO.CategoryDTO.CategoryStatusDTO;
+import com.learn.ecommerce.DTO.Category.AddCategoryDTO;
+import com.learn.ecommerce.DTO.Category.CategoryDTO;
+import com.learn.ecommerce.DTO.Category.CategoryStatusDTO;
 import com.learn.ecommerce.DTO.ErrorResponseDTO;
 import com.learn.ecommerce.services.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;

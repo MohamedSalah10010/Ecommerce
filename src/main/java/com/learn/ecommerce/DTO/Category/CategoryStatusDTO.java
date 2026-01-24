@@ -1,4 +1,4 @@
-package com.learn.ecommerce.DTO.ProductDTO;
+package com.learn.ecommerce.DTO.Category;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductStatusDTO {
-    private  Long productId;
-    private String productName;
+public class CategoryStatusDTO {
+    private Long id;
+    private String name;
     private String statusMessage;
 }

@@ -1,8 +1,8 @@
 package com.learn.ecommerce.services;
 
-import com.learn.ecommerce.DTO.CategoryDTO.AddCategoryDTO;
-import com.learn.ecommerce.DTO.CategoryDTO.CategoryDTO;
-import com.learn.ecommerce.DTO.CategoryDTO.CategoryStatusDTO;
+import com.learn.ecommerce.DTO.Category.AddCategoryDTO;
+import com.learn.ecommerce.DTO.Category.CategoryDTO;
+import com.learn.ecommerce.DTO.Category.CategoryStatusDTO;
 import com.learn.ecommerce.entity.Category;
 import com.learn.ecommerce.exceptionhandler.CategoryNotFoundException;
 import com.learn.ecommerce.repository.CategoryRepo;
@@ -27,10 +27,11 @@ public class CategoryService {
         Category category = categoryRepo.findById(id).orElse(null);
         if (category == null || category.isDeleted()) {
             log.warn("Category with id {} not found or deleted", id);
-            throw new CategoryNotFoundException();
+            throw new CategoryNotFoundException("Category Not Found");
         }
         log.info("Fetched category with id {}", id);
-        return new CategoryDTO().builder()
+
+	    return  CategoryDTO.builder()
                 .id(category.getId())
                 .name(category.getName())
                 .description(category.getDescription())
@@ -40,14 +41,12 @@ public class CategoryService {
     public List<CategoryDTO> getAllCategories() {
         List<CategoryDTO> categoriesDTO = new ArrayList<>();
         List<Category> categories =  categoryRepo.findAll();
-//        if (categories.isEmpty()) {
-//            log.warn("No categories found in database");
-//            throw new CategoryNotFoundException();
-//        }
+//
         for (Category category : categories) {
             if (category.isDeleted())
                 continue;
-            categoriesDTO.add(new CategoryDTO().builder()
+	        new CategoryDTO();
+	        categoriesDTO.add(CategoryDTO.builder()
                     .id(category.getId())
                     .name(category.getName())
                     .description(category.getDescription())
@@ -64,7 +63,8 @@ public class CategoryService {
         category.setDescription(addCategoryDTO.getDescription());
         categoryRepo.save(category);
         log.info("Added new category: {} (id: {})", category.getName(), category.getId());
-        return new CategoryStatusDTO().builder()
+
+	    return CategoryStatusDTO.builder()
                 .id(category.getId())
                 .name(category.getName())
                 .statusMessage("Category added successfully")
@@ -75,17 +75,19 @@ public class CategoryService {
     public CategoryStatusDTO updateCategory(Long id, AddCategoryDTO addCategoryDTO) {
         Category category = categoryRepo.findById(id).orElseThrow(() -> {
             log.warn("Category with id {} not found for update", id);
-            return new CategoryNotFoundException();
+            return new CategoryNotFoundException("Category Not Found");
         });
         if (category.isDeleted()) {
             log.warn("Category with id {} is deleted and cannot be updated", id);
-            throw new CategoryNotFoundException();
+            throw new CategoryNotFoundException("Category Not Found");
         }
         if (addCategoryDTO.getName() != null) category.setName(addCategoryDTO.getName());
         if (addCategoryDTO.getDescription() != null) category.setDescription(addCategoryDTO.getDescription());
         categoryRepo.save(category);
         log.info("Updated category: {} (id: {})", category.getName(), category.getId());
-        return new CategoryStatusDTO().builder()
+
+
+	    return CategoryStatusDTO.builder()
                 .id(category.getId())
                 .name(category.getName())
                 .statusMessage("Category updated successfully")
@@ -96,16 +98,16 @@ public class CategoryService {
     public CategoryStatusDTO deleteCategory(Long id) {
         Category category = categoryRepo.findById(id).orElseThrow(() -> {
             log.warn("Category with id {} not found for deletion", id);
-            return new CategoryNotFoundException();
+            return new CategoryNotFoundException("Category Not Found");
         });
         if (category.isDeleted()) {
             log.warn("Category with id {} is already deleted", id);
-            throw new CategoryNotFoundException();
+            throw new CategoryNotFoundException("Category Not Found");
         }
         category.setDeleted(true);
         categoryRepo.save(category);
         log.info("Deleted category: {} (id: {})", category.getName(), category.getId());
-        return new CategoryStatusDTO().builder()
+	    return CategoryStatusDTO.builder()
                 .id(category.getId())
                 .name(category.getName())
                 .statusMessage("Category deleted successfully")

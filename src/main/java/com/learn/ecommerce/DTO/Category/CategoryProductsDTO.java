@@ -1,16 +1,17 @@
-package com.learn.ecommerce.DTO.CategoryDTO;
+package com.learn.ecommerce.DTO.Category;
 
 import com.learn.ecommerce.DTO.ProductDTO.ProductStatusDTO;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Getter
-@Setter
+@Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-
 public class CategoryProductsDTO {
     private Long categoryId;
     private String categoryName;

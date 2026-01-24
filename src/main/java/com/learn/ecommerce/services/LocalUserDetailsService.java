@@ -3,6 +3,7 @@ package com.learn.ecommerce.services;
 import com.learn.ecommerce.repository.LocalUserRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -16,7 +17,7 @@ public class LocalUserDetailsService implements UserDetailsService {
     private final LocalUserRepo userRepo;
 
     @Override
-    public UserDetails loadUserByUsername(String username)
+    public @NotNull UserDetails loadUserByUsername(@NotNull String username)
             throws UsernameNotFoundException {
         return userRepo.findByUserNameIgnoreCase(username)
                 .filter(user -> !user.isDeleted())

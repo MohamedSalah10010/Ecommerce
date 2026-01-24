@@ -1,7 +1,14 @@
 package com.learn.ecommerce.repository;
 
 import com.learn.ecommerce.entity.Address;
-import org.springframework.data.repository.CrudRepository;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface AddressRepo  extends CrudRepository<Address,Long> {
+import java.util.List;
+import java.util.Optional;
+
+public interface AddressRepo  extends JpaRepository<@NotNull Address, @NotNull Long> {
+
+	Optional<Address> findByIdAndIsDeleted(Long id, boolean isDeleted);
+	List<Address> findAllByIsDeleted(boolean isDeleted);
 }

@@ -13,6 +13,7 @@ import com.learn.ecommerce.repository.ProductRepo;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,7 +35,7 @@ public class ProductService {
     private final InventoryRepo inventoryRepo;
     private final CategoryRepo categoryRepo;
 
-    public Page<ProductDTO> getProducts(
+    public Page<@NotNull ProductDTO> getProducts(
             Double priceMin,
             Double priceMax,
             String sortBy,
@@ -44,7 +45,7 @@ public class ProductService {
         log.info("Fetching products with priceMin={}, priceMax={}, sortBy={}, direction={}, page={}",
                 priceMin, priceMax, sortBy, direction, pageable.getPageNumber());
 
-        Specification<Product> spec = Specification
+        Specification<@NotNull Product> spec = Specification
                 .where(ProductSpecification.isNotDeleted())
                 .and(ProductSpecification.priceBetween(priceMin, priceMax));
 
@@ -64,7 +65,7 @@ public class ProductService {
                 sort
         );
 
-        Page<ProductDTO> result = productRepo.findAll(spec, finalPageable)
+        Page<@NotNull ProductDTO> result = productRepo.findAll(spec, finalPageable)
                 .map(product -> ProductDTO.builder()
                         .name(product.getName())
                         .price(product.getPrice())
@@ -80,12 +81,12 @@ public class ProductService {
 
         Product product = productRepo.findById(id).orElseThrow(() -> {
             log.warn("Product with ID={} not found", id);
-            return new ProductNotFoundException();
+            return new ProductNotFoundException("product not found");
         });
 
         if (product.isDeleted()) {
             log.warn("Product with ID={} is marked as deleted", id);
-            throw new ProductNotFoundException();
+            throw new ProductNotFoundException("product not found");
         }
 
         log.info("Product found: {}", product.getName());
@@ -114,7 +115,7 @@ public class ProductService {
             Category category = categoryRepo.findById(productBody.getCategoryId())
                     .orElseThrow(() -> {
                         log.warn("Category with ID={} not found", productBody.getCategoryId());
-                        return new CategoryNotFoundException();
+                        return new CategoryNotFoundException("Category Not Found");
                     });
             product.setCategory(category);
             log.info("Assigned category {} to product {}", category.getName(), product.getName());
@@ -143,7 +144,7 @@ public class ProductService {
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> {
                     log.warn("Product ID={} not found or deleted", id);
-                    return new ProductNotFoundException();
+                    return new ProductNotFoundException("product not found");
                 });
 
         if (productBody.getName() != null && !productBody.getName().isEmpty()) {
@@ -160,7 +161,7 @@ public class ProductService {
             Category category = categoryRepo.findById(productBody.getCategoryId())
                     .orElseThrow(() -> {
                         log.warn("Category ID={} not found", productBody.getCategoryId());
-                        return new CategoryNotFoundException();
+                        return new CategoryNotFoundException("Category Not Found");
                     });
             product.setCategory(category);
             log.info("Updated product category to {}", category.getName());
@@ -186,7 +187,7 @@ public class ProductService {
             log.info("Product ID={} marked as deleted", id);
         }, () -> {
             log.warn("Product ID={} not found for deletion", id);
-            throw new ProductNotFoundException();
+            throw new ProductNotFoundException("product not found");
         });
 
         return ProductStatusDTO.builder()
@@ -226,23 +227,23 @@ public class ProductService {
         Product product = productRepo.findById(productId)
                 .orElseThrow(() -> {
                     log.warn("Product ID={} not found", productId);
-                    return new ProductNotFoundException();
+                    return new ProductNotFoundException("product not found");
                 });
 
         if (product.isDeleted()) {
             log.warn("Product ID={} is deleted", productId);
-            throw new ProductNotFoundException();
+            throw new ProductNotFoundException("product not found");
         }
 
         Category category = categoryRepo.findById(body.getCategoryId())
                 .orElseThrow(() -> {
                     log.warn("Category ID={} not found", body.getCategoryId());
-                    return new CategoryNotFoundException();
+                    return new CategoryNotFoundException("Category not Found");
                 });
 
         if (category.isDeleted()) {
             log.warn("Category ID={} is deleted", body.getCategoryId());
-            throw new CategoryNotFoundException();
+            throw new CategoryNotFoundException("Category not Found");
         }
 
         product.setCategory(category);

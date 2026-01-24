@@ -1,17 +1,18 @@
 package com.learn.ecommerce.DTO;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
 
-@RequiredArgsConstructor
-@AllArgsConstructor
-@Setter
-@Getter
+@Data
 @Builder
-
+@AllArgsConstructor
+@NoArgsConstructor
 @Schema(description = "Standard error response")
 public class ErrorResponseDTO {
 

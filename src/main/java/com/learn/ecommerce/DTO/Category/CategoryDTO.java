@@ -1,10 +1,12 @@
-package com.learn.ecommerce.DTO.CategoryDTO;
+package com.learn.ecommerce.DTO.Category;
 
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

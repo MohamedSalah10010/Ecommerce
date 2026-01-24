@@ -6,6 +6,7 @@ import com.learn.ecommerce.DTO.UserResponseDTO.LoginResponseDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.LogoutResponseDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.UserDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.UserStatusDTO;
+import com.learn.ecommerce.entity.Address;
 import com.learn.ecommerce.entity.LocalUser;
 import com.learn.ecommerce.entity.LoginTokens;
 import com.learn.ecommerce.entity.VerificationToken;
@@ -54,15 +55,24 @@ public class UserService {
         if (userRepository.findByEmailIgnoreCase(body.getEmail()).isPresent()
                 || userRepository.findByUserNameIgnoreCase(body.getUsername()).isPresent()) {
             log.warn("Registration failed: user already exists with username/email {}", body.getUsername());
-            throw new UserAlreadyExistsException();
+            throw new UserAlreadyExistsException("user already exists");
         }
 
         LocalUser user = new LocalUser();
         user.setFirstName(body.getFirstName());
         user.setLastName(body.getLastName());
         user.setEmail(body.getEmail());
+		user.setPhoneNumber(body.getPhoneNumber());
         user.setPassword(encryptionService.encryptPassword(body.getPassword()));
         user.setUserName(body.getUsername());
+
+	    Address address = Address.builder()
+						.user(user)
+						.addressLine1(body.getAddress().getAddressLine1())
+						.addressLine2(body.getAddress().getAddressLine2())
+						.city(body.getAddress().getCity())
+						.country(body.getAddress().getCountry()).build();
+		user.getAddresses().add(address);
 
         VerificationToken verificationToken = createVerificationToken(user);
         emailService.sendVerificationEmail(verificationToken);
@@ -76,10 +86,10 @@ public class UserService {
     public UserDTO getUserProfile(LocalUser user) {
         log.info("Fetching profile for userId={}", user.getId());
 
-        LocalUser localUser = userRepository.findById(user.getId())
+        LocalUser localUser = userRepository.findByIdAndIsDeleted(user.getId(),true)
                 .orElseThrow(() -> {
                     log.warn("User not found: id={}", user.getId());
-                    return new UserNotFoundException();
+                    return new UserNotFoundException("user not found");
                 });
 
         log.info("Profile fetched successfully for user {}", localUser.getUsername());
@@ -105,17 +115,21 @@ public class UserService {
         LocalUser user = userRepository.findByUserNameIgnoreCase(body.getUsername())
                 .orElseThrow(() -> {
                     log.warn("Login failed: user not found {}", body.getUsername());
-                    return new UserNotFoundException();
+                    return new UserNotFoundException("user not found");
                 });
 
+		if(user.isDeleted()) {
+			log.warn("Login failed: user is deleted {}", body.getUsername());
+			throw new UserNotFoundException("user not found");
+		}
         if (!encryptionService.checkPassword(body.getPassword(), user.getPassword())) {
             log.warn("Login failed: invalid credentials for user {}", body.getUsername());
-            throw new InvalidCredentialsException();
+            throw new InvalidCredentialsException("invalid credentials for user");
         }
 
         if (!user.isVerified()) {
             log.warn("Login failed: user not verified {}", body.getUsername());
-            throw new UserIsNotVerifiedException();
+            throw new UserIsNotVerifiedException("user is not verified");
         }
 
         LoginTokens loginToken = new LoginTokens();
@@ -142,15 +156,19 @@ public class UserService {
         LocalUser user = userRepository.findByVerificationTokens_Token(token)
                 .orElseThrow(() -> {
                     log.warn("Verification failed: user not found for token={}", token);
-                    return new UserNotFoundException();
+                    return new UserNotFoundException("user not found for the token");
                 });
+		if(user.isDeleted()) {
+			log.warn("Verification failed: user is deleted for token {}", token);
+			throw new UserNotFoundException("user not found for the token");
+		}
 
         VerificationToken verificationToken = user.getVerificationTokens().stream()
-                .filter(t -> t.getToken().equals(token))
+                .filter(t -> t.getToken().equals(token) && !t.isDeleted())
                 .findFirst()
                 .orElseThrow(() -> {
                     log.warn("Verification failed: token not found={}", token);
-                    return new TokenNotFoundException();
+                    return new TokenNotFoundException("token not found");
                 });
 
         if (verificationToken.getExpiryDate().isBefore(Instant.now())) {
@@ -163,8 +181,8 @@ public class UserService {
             user.setEnabled(true);
             log.info("User email verified: {}", user.getUsername());
         }
-
-        user.getVerificationTokens().remove(verificationToken);
+		verificationToken.setDeleted(true);
+//        user.getVerificationTokens().remove(verificationToken);
         userRepository.save(user);
 
         return UserStatusDTO.builder()
@@ -181,8 +199,13 @@ public class UserService {
         LocalUser user = userRepository.findByUserNameIgnoreCase(body.getUsername())
                 .orElseThrow(() -> {
                     log.warn("User not found for email verification: {}", body.getUsername());
-                    return new UserNotFoundException();
+                    return new UserNotFoundException("user not found");
                 });
+
+	    if(user.isDeleted()) {
+		    log.warn("User is deleted for email verification: {}", body.getUsername());
+		    throw new UserNotFoundException("user not found");
+	    }
 
         if (!user.getEmail().equals(body.getEmail())) {
             log.warn("Email verification failed: email mismatch for user {}", body.getUsername());
@@ -204,17 +227,17 @@ public class UserService {
         LocalUser user = userRepository.findByUserNameIgnoreCase(body.getUsername())
                 .orElseThrow(() -> {
                     log.warn("User not found for password reset: {}", body.getUsername());
-                    return new UserNotFoundException();
+                    return new UserNotFoundException("user not found ");
                 });
 
         if (!user.getEmail().equals(body.getEmail())) {
             log.warn("Password reset failed: email mismatch for user {}", body.getUsername());
-            throw new UserNotFoundException();
+            throw new UserNotFoundException("email mismatch");
         }
 
         if (!user.isVerified()) {
             log.warn("Password reset failed: user not verified {}", body.getUsername());
-            throw new UserIsNotVerifiedException();
+            throw new UserIsNotVerifiedException("user is not verified");
         }
 
         String token = jwtService.generatePasswordResetToken(user);
@@ -236,7 +259,7 @@ public class UserService {
         LocalUser user = userRepository.findByVerificationTokens_Token(token)
                 .orElseThrow(() -> {
                     log.warn("User not found for password reset with token={}", token);
-                    return new UserNotFoundException();
+                    return new UserNotFoundException("user not found for this token");
                 });
 
         VerificationToken verificationToken = user.getVerificationTokens().stream()
@@ -244,7 +267,7 @@ public class UserService {
                 .findFirst()
                 .orElseThrow(() -> {
                     log.warn("Password reset failed: token not found={}", token);
-                    return new TokenNotFoundException();
+                    return new TokenNotFoundException("token not found");
                 });
 
         if (verificationToken.getExpiryDate().isBefore(Instant.now())) {
@@ -270,7 +293,7 @@ public class UserService {
         LocalUser user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("User not found for profile update: id={}", userId);
-                    return new UserNotFoundException();
+                    return new UserNotFoundException("user not found");
                 });
 
         if (body.getEmail() != null) user.setEmail(body.getEmail());
@@ -278,6 +301,16 @@ public class UserService {
         if (body.getFirstName() != null) user.setFirstName(body.getFirstName());
         if (body.getLastName() != null) user.setLastName(body.getLastName());
         if (body.getPhoneNumber() != null) user.setPhoneNumber(body.getPhoneNumber());
+		if(body.getAddress() != null)
+		{
+			Address address = new Address();
+			if (body.getAddress().getAddressLine1()!= null) address.setAddressLine1(body.getAddress().getAddressLine1());
+			if (body.getAddress().getAddressLine2()!= null) address.setAddressLine2(body.getAddress().getAddressLine2());
+			if (body.getAddress().getCity()!= null) address.setCity(body.getAddress().getCity());
+			if (body.getAddress().getCountry()!= null) address.setCountry(body.getAddress().getCountry());
+
+			user.getAddresses().add(address);
+		}
 
         userRepository.save(user);
         log.info("User profile updated successfully for userId={}", userId);

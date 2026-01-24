@@ -39,4 +39,7 @@ public class LoginTokens extends BaseAuditEntity {
 
     @Column(nullable = false)
     private Instant expiresAt;
+
+	@Column(name = "is_deleted", nullable = false, columnDefinition = "BIT DEFAULT 0")
+	private boolean isDeleted = false;
 }

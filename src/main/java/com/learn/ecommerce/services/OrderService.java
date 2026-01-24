@@ -5,9 +5,9 @@ import com.learn.ecommerce.DTO.Order.OrderItemDTO;
 import com.learn.ecommerce.entity.*;
 import com.learn.ecommerce.enums.CartStatus;
 import com.learn.ecommerce.enums.OrderStatus;
+import com.learn.ecommerce.exceptionhandler.AddressNotFoundException;
 import com.learn.ecommerce.exceptionhandler.InsufficientStockException;
 import com.learn.ecommerce.exceptionhandler.ItemNotFoundException;
-import com.learn.ecommerce.exceptionhandler.UserNotFoundException;
 import com.learn.ecommerce.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
@@ -55,10 +55,12 @@ public class OrderService {
     public OrderDTO placeOrderFromCart(LocalUser user, Long addressId) {
         log.info("Placing order for user={} with addressId={}", user.getUsername(), addressId);
 
+
+		/// /////// rethink about this logic
         Address address = addressRepo.findById(addressId)
                 .orElseThrow(() -> {
                     log.warn("Address not found for addressId={}", addressId);
-                    return new UserNotFoundException();
+                    return new AddressNotFoundException("");
                 });
 
         Cart cart = cartRepo.findByUserIdAndStatus(user.getId(), CartStatus.ACTIVE)
@@ -89,7 +91,7 @@ public class OrderService {
             if (inventory.getQuantity() < cartItem.getQuantity()) {
                 log.warn("Insufficient stock for product={} requested={} available={}",
                         cartItem.getProduct().getName(), cartItem.getQuantity(), inventory.getQuantity());
-                throw new InsufficientStockException();
+                throw new InsufficientStockException("Insufficient stock for product ");
             }
 
             // Deduct inventory

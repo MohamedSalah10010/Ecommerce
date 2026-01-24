@@ -1,8 +1,14 @@
 package com.learn.ecommerce.repository;
 
 import com.learn.ecommerce.entity.VerificationToken;
-import org.springframework.data.repository.CrudRepository;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface VerificationTokenRepo extends CrudRepository<VerificationToken, Long> {
-    VerificationToken findByToken(String token);
+import java.util.List;
+import java.util.Optional;
+
+public interface VerificationTokenRepo extends JpaRepository<@NotNull VerificationToken, @NotNull Long> {
+   Optional< VerificationToken> findByToken(String token);
+	Optional<VerificationToken> findByTokenAndIsDeleted(String token, boolean isDeleted);
+	List<VerificationToken> findAllByIsDeleted(boolean isDeleted);
 }

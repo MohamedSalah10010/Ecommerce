@@ -1,12 +1,14 @@
 package com.learn.ecommerce.DTO.UserResponseDTO;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
-@Getter
-@Setter
-@RequiredArgsConstructor
+@Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class LogoutResponseDTO {
     private String logoutMessage;
 }

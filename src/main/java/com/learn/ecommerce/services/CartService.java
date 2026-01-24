@@ -117,7 +117,7 @@ public class CartService {
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> {
                     log.warn("Product {} not found or deleted", dto.getProductId());
-                    return new ProductNotFoundException();
+                    return new ProductNotFoundException("product not found");
                 });
 
         CartItem item = cartItemRepo.findByCartAndProduct(cart, product)
@@ -141,7 +141,7 @@ public class CartService {
 
     @Transactional
     public CartDTO checkoutCart(LocalUser user, Long cartId) {
-        Cart cart = cartRepo.findByUserIdAndId(user.getId(), cartId)
+        Cart cart = cartRepo.findByIdAndUserId(user.getId(), cartId)
                 .orElseThrow(() -> {
                     log.warn("No cart {} found for checkout for user {}", cartId, user.getId());
                     return new CartIsEmptyException("Cart items is empty, can't checkout cart");
@@ -157,7 +157,7 @@ public class CartService {
             Inventory inventory = item.getProduct().getInventory();
             if (inventory.getQuantity() < item.getQuantity()) {
                 log.warn("Insufficient stock for product {} in cart {}", item.getProduct().getId(), cart.getId());
-                throw new InsufficientStockException();
+                throw new InsufficientStockException("Insufficient stock for product ");
             }
             inventory.setQuantity(inventory.getQuantity() - item.getQuantity());
             inventoryRepo.save(inventory);

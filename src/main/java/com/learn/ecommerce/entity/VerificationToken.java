@@ -28,6 +28,8 @@ public class VerificationToken extends BaseAuditEntity{
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private LocalUser user;
+	@Column(name = "is_deleted", nullable = false, columnDefinition = "BIT DEFAULT 0")
+	private boolean isDeleted = false;
 
 
 
