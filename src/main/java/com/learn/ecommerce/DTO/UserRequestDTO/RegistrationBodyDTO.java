@@ -1,6 +1,6 @@
 package com.learn.ecommerce.DTO.UserRequestDTO;
 
-import com.learn.ecommerce.DTO.Address.AddAdressDTO;
+import com.learn.ecommerce.DTO.Address.AddAddressDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -75,7 +75,7 @@ public class RegistrationBodyDTO {
     )
     private String phoneNumber;
 
-	private AddAdressDTO address;
+	private AddAddressDTO address;
     @Override
     public String toString() {
         return getUsername()+"\n"+getFirstName()+"\n"+getLastName()+"\n"+getEmail();

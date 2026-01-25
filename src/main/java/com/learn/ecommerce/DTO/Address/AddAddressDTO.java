@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class AddAdressDTO {
+public class AddAddressDTO {
 
 		private String addressLine1;
 		private String addressLine2;

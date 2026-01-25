@@ -58,7 +58,7 @@ public class EmailService {
         message.setTo(verificationToken.getUser().getEmail());
         message.setSubject("Password Reset Request");
         String body = "To reset your password, please click the following link:\n " +
-                url + "/auth/reset-password?token=" + "[PROTECTED_TOKEN]";
+                url + "/auth/reset-password?token=" + verificationToken.getToken();
         message.setText(body);
 
         try {

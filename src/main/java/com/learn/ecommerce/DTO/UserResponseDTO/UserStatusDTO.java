@@ -27,13 +27,13 @@ public class UserStatusDTO {
             description = "Indicates whether the user account is enabled",
             example = "true"
     )
-    private boolean isEnabled;
+    private Boolean isEnabled;
 
     @Schema(
             description = "Indicates whether the user email is verified",
             example = "true"
     )
-    private boolean isVerified;
+    private Boolean isVerified;
 
     @Schema(
             description = "Indicates whether password change was successful",

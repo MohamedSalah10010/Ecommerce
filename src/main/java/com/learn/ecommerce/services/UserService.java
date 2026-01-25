@@ -1,6 +1,8 @@
 package com.learn.ecommerce.services;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.learn.ecommerce.DTO.Address.AddressDTO;
+import com.learn.ecommerce.DTO.Roles.RolesDTO;
 import com.learn.ecommerce.DTO.UserRequestDTO.*;
 import com.learn.ecommerce.DTO.UserResponseDTO.LoginResponseDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.LogoutResponseDTO;
@@ -13,12 +15,13 @@ import com.learn.ecommerce.entity.VerificationToken;
 import com.learn.ecommerce.exceptionhandler.*;
 import com.learn.ecommerce.repository.LocalUserRepo;
 import com.learn.ecommerce.repository.LoginTokensRepo;
-import com.learn.ecommerce.utils.ObjectMapperUtils;
+import com.learn.ecommerce.repository.VerificationTokenRepo;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,12 +34,14 @@ import java.util.List;
 @AllArgsConstructor
 @Service
 public class UserService {
+	private final ModelMapper modelMapper;
 
-    private final LoginTokensRepo loginTokensRepo;
-    private LocalUserRepo userRepository;
-    private EncryptionService encryptionService;
-    private JwtService jwtService;
-    private EmailService emailService;
+	private final LoginTokensRepo loginTokensRepo;
+    private  final LocalUserRepo userRepository;
+    private final EncryptionService encryptionService;
+    private final JwtService jwtService;
+    private final EmailService emailService;
+	private final VerificationTokenRepo verificationTokenRepo;
 
     private VerificationToken createVerificationToken(LocalUser user) {
         String token = jwtService.generateVerificationToken(user);
@@ -80,8 +85,32 @@ public class UserService {
         userRepository.save(user);
 
         log.info("User registered successfully: username={}", user.getUsername());
-        return ObjectMapperUtils.map(user, UserDTO.class);
-    }
+	    List<AddressDTO> addressDTO = user.getAddresses().stream().filter(address1-> !address1.isDeleted()).map(address1->
+					    new AddressDTO(
+							    address1.getAddressLine1(),
+							    address1.getAddressLine1(),
+							    address1.getCity(),
+							    address1.getCountry()))
+			    .toList();
+		List<RolesDTO> rolesDTOS = user.getUserRoles().stream().filter(roles-> !roles.isDeleted()).map(roles->
+			 new RolesDTO(roles.getRoleName())).toList();
+
+//	    return ObjectMapperUtils.map(user, UserDTO.class);
+	    return UserDTO.builder()
+			    .id(user.getId())
+			    .userName(user.getUsername())
+			    .email(user.getEmail())
+			    .firstName(user.getFirstName())
+			    .lastName(user.getLastName())
+			    .phoneNumber(user.getPhoneNumber())
+			    .roles(rolesDTOS)
+			    .addresses( addressDTO)
+			    .isVerified(user.isVerified())
+			    .isEnabled(user.isEnabled())
+			    .createdAt(user.getCreatedAt())
+			    .updatedAt(user.getUpdatedAt())
+			    .build();	}
+
 
     public UserDTO getUserProfile(LocalUser user) {
         log.info("Fetching profile for userId={}", user.getId());
@@ -93,15 +122,25 @@ public class UserService {
                 });
 
         log.info("Profile fetched successfully for user {}", localUser.getUsername());
-        return UserDTO.builder()
+	    List<AddressDTO> addressDTO = localUser.getAddresses().stream().filter(address-> !address.isDeleted()).map(address->
+			    new AddressDTO(
+						address.getAddressLine1(),
+					    address.getAddressLine1(),
+					    address.getCity(),
+					    address.getCountry()))
+			    .toList();
+	    List<RolesDTO> rolesDTOS = user.getUserRoles().stream().filter(roles-> !roles.isDeleted()).map(roles->
+			    new RolesDTO(roles.getRoleName())).toList();
+
+		     return UserDTO.builder()
                 .id(localUser.getId())
                 .userName(localUser.getUsername())
                 .email(localUser.getEmail())
                 .firstName(localUser.getFirstName())
                 .lastName(localUser.getLastName())
                 .phoneNumber(localUser.getPhoneNumber())
-                .roles(localUser.getUserRoles())
-                .addresses(localUser.getAddresses())
+                .roles(rolesDTOS)
+                .addresses( addressDTO)
                 .isVerified(localUser.isVerified())
                 .isEnabled(localUser.isEnabled())
                 .createdAt(localUser.getCreatedAt())
@@ -151,30 +190,16 @@ public class UserService {
 
     @Transactional
     public UserStatusDTO verifyUserEmail(String token) {
-        log.info("Verifying email with token={}", token);
 
-        LocalUser user = userRepository.findByVerificationTokens_Token(token)
-                .orElseThrow(() -> {
-                    log.warn("Verification failed: user not found for token={}", token);
-                    return new UserNotFoundException("user not found for the token");
-                });
-		if(user.isDeleted()) {
-			log.warn("Verification failed: user is deleted for token {}", token);
-			throw new UserNotFoundException("user not found for the token");
-		}
 
-        VerificationToken verificationToken = user.getVerificationTokens().stream()
-                .filter(t -> t.getToken().equals(token) && !t.isDeleted())
-                .findFirst()
-                .orElseThrow(() -> {
-                    log.warn("Verification failed: token not found={}", token);
-                    return new TokenNotFoundException("token not found");
-                });
+	    VerificationToken verificationToken =  verificationTokenRepo.findByTokenAndIsDeleted(token,false)
+			    .orElseThrow(() -> new TokenNotFoundException("Token not found"));
 
-        if (verificationToken.getExpiryDate().isBefore(Instant.now())) {
-            log.warn("Verification token expired for user {}", user.getUsername());
-            throw new TokenExpiredException("Token has expired", Instant.now());
-        }
+
+	    if (verificationToken.getExpiryDate().isBefore(Instant.now())) {
+		    throw new TokenExpiredException("Token has expired", Instant.now());
+	    }
+	    LocalUser user = verificationToken.getUser();
 
         if (!user.isVerified()) {
             user.setVerified(true);
@@ -182,7 +207,6 @@ public class UserService {
             log.info("User email verified: {}", user.getUsername());
         }
 		verificationToken.setDeleted(true);
-//        user.getVerificationTokens().remove(verificationToken);
         userRepository.save(user);
 
         return UserStatusDTO.builder()
@@ -254,35 +278,27 @@ public class UserService {
 
     @Transactional
     public UserStatusDTO resetPassword(String newPassword, String token) {
-        log.info("Resetting password using token={}", token);
 
-        LocalUser user = userRepository.findByVerificationTokens_Token(token)
-                .orElseThrow(() -> {
-                    log.warn("User not found for password reset with token={}", token);
-                    return new UserNotFoundException("user not found for this token");
-                });
 
-        VerificationToken verificationToken = user.getVerificationTokens().stream()
-                .filter(t -> t.getToken().equals(token))
-                .findFirst()
-                .orElseThrow(() -> {
-                    log.warn("Password reset failed: token not found={}", token);
-                    return new TokenNotFoundException("token not found");
-                });
+        VerificationToken verificationToken =  verificationTokenRepo.findByTokenAndIsDeleted(token,false)
+					    .orElseThrow(() -> new TokenNotFoundException("Token not found"));
 
-        if (verificationToken.getExpiryDate().isBefore(Instant.now())) {
-            log.warn("Password reset token expired for user {}", user.getUsername());
-            throw new TokenExpiredException("Token has expired", Instant.now());
-        }
+	    if (verificationToken.getExpiryDate().isBefore(Instant.now())) {
+		    throw new TokenExpiredException("Token has expired", Instant.now());
+	    }
 
-        user.setPassword(encryptionService.encryptPassword(newPassword));
-        user.getVerificationTokens().remove(verificationToken);
+	    LocalUser user = verificationToken.getUser();
+	    log.info("Resetting password for user={}", user.getUsername());
+	    user.setPassword(encryptionService.encryptPassword(newPassword));
+	    verificationToken.setDeleted(true);
         userRepository.save(user);
 
         log.info("Password reset successfully for user {}", user.getUsername());
         return UserStatusDTO.builder()
                 .passwordChangedSuccess(true)
                 .statusMessage("Password changed successfully.")
+		        .isVerified(null)
+		        .isVerified(null)
                 .build();
     }
 
@@ -317,6 +333,8 @@ public class UserService {
 
         return UserStatusDTO.builder()
                 .statusMessage("Profile updated successfully.")
+		        .isVerified(null)
+		        .isVerified(null)
                 .build();
     }
 

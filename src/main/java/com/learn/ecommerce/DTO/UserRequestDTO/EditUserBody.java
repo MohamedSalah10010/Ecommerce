@@ -1,7 +1,7 @@
 package com.learn.ecommerce.DTO.UserRequestDTO;
 
 
-import com.learn.ecommerce.DTO.Address.AddAdressDTO;
+import com.learn.ecommerce.DTO.Address.AddAddressDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
@@ -33,6 +33,6 @@ public class EditUserBody {
     private String username;
     private String firstName;
     private String lastName;
-	private AddAdressDTO address;
+	private AddAddressDTO address;
 
 }

@@ -1,8 +1,8 @@
 package com.learn.ecommerce.DTO.UserResponseDTO;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.learn.ecommerce.entity.Address;
-import com.learn.ecommerce.entity.UserRoles;
+import com.learn.ecommerce.DTO.Address.AddressDTO;
+import com.learn.ecommerce.DTO.Roles.RolesDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,13 +39,13 @@ public class UserDTO {
     private String lastName;
 
     private String phoneNumber;
-    private Collection<UserRoles> roles;
+    private Collection<RolesDTO> roles;
 
     @Schema(
             description = "List of user addresses",
             nullable = true
     )
-    private Collection<Address> addresses;
+    private Collection<AddressDTO> addresses;
 
     @JsonProperty("is_enabled")
     @Schema(example = "true")
