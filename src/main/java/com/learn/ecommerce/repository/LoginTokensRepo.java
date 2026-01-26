@@ -13,7 +13,7 @@ public interface LoginTokensRepo extends JpaRepository<@NotNull LoginTokens, @No
 
     Optional<Collection<LoginTokens>> findLoginTokensByUser(LocalUser user);
 
-    List<LoginTokens> findAllByUser(LocalUser user);
+    List<LoginTokens> findAllByUserAndIsDeleted(LocalUser user, boolean isDeleted);
     Optional<LoginTokens> findByToken(String token);
 
 	List<LoginTokens> findAllByIsDeleted(boolean isDeleted);

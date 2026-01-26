@@ -7,7 +7,6 @@ import com.learn.ecommerce.DTO.UserResponseDTO.LogoutResponseDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.UserDTO;
 import com.learn.ecommerce.DTO.UserResponseDTO.UserStatusDTO;
 import com.learn.ecommerce.entity.LocalUser;
-import com.learn.ecommerce.repository.LocalUserRepo;
 import com.learn.ecommerce.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -35,10 +34,10 @@ import org.springframework.web.bind.annotation.*;
 public class AuthenticationController {
 
     private final UserService userService;
-	private final LocalUserRepo localUserRepo;
 
-    public AuthenticationController(LocalUserRepo localUserRepo, UserService userService) {
-	    this.localUserRepo = localUserRepo;
+
+    public AuthenticationController( UserService userService) {
+
         this.userService = userService;
     }
 
@@ -51,11 +50,11 @@ public class AuthenticationController {
                     content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
     @PostMapping("/register")
-    @RolesAllowed({"ADMIN"}) // Only ADMIN can register users
+    @RolesAllowed({"ADMIN","USER"})
     public ResponseEntity<@NotNull UserDTO> registerUser(@Valid @RequestBody RegistrationBodyDTO registrationBodyDTO) {
-        log.info("Admin registering new user with username: {}", registrationBodyDTO.getUsername());
+
         UserDTO registeredUser = userService.registerUser(registrationBodyDTO);
-        log.info("User registered successfully: {}", registeredUser.getUserName());
+
         return new ResponseEntity<>(registeredUser, HttpStatus.CREATED);
     }
 
@@ -71,9 +70,8 @@ public class AuthenticationController {
     })
     @PostMapping("/login")
     public ResponseEntity<@NotNull LoginResponseDTO> login(@Valid @RequestBody LoginBodyDTO loginBodyDTO) {
-        log.info("Attempting login for username: {}", loginBodyDTO.getUsername());
         LoginResponseDTO loginResponse = userService.loginUser(loginBodyDTO);
-        log.info("Login successful for username: {}", loginBodyDTO.getUsername());
+
         return ResponseEntity.ok(loginResponse);
     }
 
@@ -89,9 +87,9 @@ public class AuthenticationController {
     @GetMapping("/me")
     @RolesAllowed({"USER", "ADMIN"}) // Both roles can access
     public ResponseEntity<@NotNull UserDTO> getLoggedInUserProfile(@AuthenticationPrincipal LocalUser user) {
-        log.info("Fetching profile for user: {}", user.getUsername());
+
 	    UserDTO profile = userService.getUserProfile(user);
-        log.info("Profile fetched for user: {}", user.getUsername());
+
         return ResponseEntity.ok(profile);
     }
 
@@ -105,9 +103,9 @@ public class AuthenticationController {
     })
     @GetMapping("/verify")
     public ResponseEntity<@NotNull UserStatusDTO> verifyUserEmail(@RequestParam("token") String token) {
-        log.info("Verifying email with token: {}", token);
+
         UserStatusDTO status = userService.verifyUserEmail(token);
-        log.info("Email verification completed with token: {}", token);
+
         return ResponseEntity.ok(status);
     }
 
@@ -122,9 +120,9 @@ public class AuthenticationController {
     @PostMapping("/forgot-password")
     @RolesAllowed({"USER", "ADMIN"})
     public ResponseEntity<@NotNull String> forgotPassword(@Valid @RequestBody ForgetPasswordBodyDTO body) {
-        log.info("Initiating password reset for email: {}", body.getEmail());
+
         userService.initiatePasswordReset(body);
-        log.info("Password reset email sent to: {}", body.getEmail());
+
         return ResponseEntity.ok("Password reset instructions have been sent to your email.");
     }
 
@@ -139,9 +137,9 @@ public class AuthenticationController {
     @PostMapping("/reset-password")
     @RolesAllowed({"USER", "ADMIN"})
     public ResponseEntity<@NotNull UserStatusDTO> resetPassword(@Valid @RequestBody ResetPasswordBodyDTO body) {
-        log.info("Resetting password with token: {}", body.getToken());
+
         UserStatusDTO status = userService.resetPassword(body.getNewPassword(), body.getToken());
-        log.info("Password reset completed for token: {}", body.getToken());
+
         return ResponseEntity.ok(status);
     }
 
@@ -149,9 +147,9 @@ public class AuthenticationController {
     @PostMapping("/request-verify")
     @RolesAllowed({"USER", "ADMIN"})
     public ResponseEntity<@NotNull Void> requestEmailVerification(@Valid @RequestBody RequestEmailVerificationDTO body) {
-        log.info("Requesting email verification for: {}", body.getEmail());
+
         userService.requestEmailVerification(body);
-        log.info("Verification email requested for: {}", body.getEmail());
+
         return ResponseEntity.ok().build();
     }
 
@@ -159,19 +157,28 @@ public class AuthenticationController {
     @PutMapping("/update/{userId}")
     @RolesAllowed({"USER", "ADMIN"})
     public ResponseEntity<@NotNull UserStatusDTO> updateUser(@PathVariable Long userId, @Valid @RequestBody EditUserBody body) {
-        log.info("Updating user profile for userId: {}", userId);
-        UserStatusDTO updated = userService.updateUserProfile(userId, body);
-        log.info("User profile updated for userId: {}", userId);
+
+        UserStatusDTO updated = userService.updateUserProfileById(userId, body);
         return ResponseEntity.ok(updated);
     }
+
+	@Operation(summary = "Update user profile", description = "Updates user information for logged in user")
+	@PutMapping("/update/logged-user")
+	@RolesAllowed({"USER", "ADMIN"})
+	public ResponseEntity<@NotNull UserStatusDTO> updateLoggedInUser(@AuthenticationPrincipal LocalUser user, @Valid @RequestBody EditUserBody body) {
+
+		UserStatusDTO updated = userService.updateLoggedInUserProfile(user, body);
+
+		return ResponseEntity.ok(updated);
+	}
 
     @Operation(summary = "Logout user", description = "Logs out the currently authenticated user")
     @PostMapping("/logout")
     @RolesAllowed({"USER", "ADMIN"})
     public ResponseEntity<@NotNull LogoutResponseDTO> logoutUser(@AuthenticationPrincipal LocalUser user) {
-        log.info("Logging out user: {}", user.getUsername());
+
         LogoutResponseDTO logoutResponse = userService.logoutUser(user);
-        log.info("User logged out: {}", user.getUsername());
+
         return ResponseEntity.ok(logoutResponse);
     }
 }

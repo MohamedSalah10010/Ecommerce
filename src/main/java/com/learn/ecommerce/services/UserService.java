@@ -21,7 +21,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +33,6 @@ import java.util.List;
 @AllArgsConstructor
 @Service
 public class UserService {
-	private final ModelMapper modelMapper;
 
 	private final LoginTokensRepo loginTokensRepo;
     private  final LocalUserRepo userRepository;
@@ -95,7 +93,6 @@ public class UserService {
 		List<RolesDTO> rolesDTOS = user.getUserRoles().stream().filter(roles-> !roles.isDeleted()).map(roles->
 			 new RolesDTO(roles.getRoleName())).toList();
 
-//	    return ObjectMapperUtils.map(user, UserDTO.class);
 	    return UserDTO.builder()
 			    .id(user.getId())
 			    .userName(user.getUsername())
@@ -291,6 +288,7 @@ public class UserService {
 	    log.info("Resetting password for user={}", user.getUsername());
 	    user.setPassword(encryptionService.encryptPassword(newPassword));
 	    verificationToken.setDeleted(true);
+		logoutUser(user);
         userRepository.save(user);
 
         log.info("Password reset successfully for user {}", user.getUsername());
@@ -303,16 +301,20 @@ public class UserService {
     }
 
     @Transactional
-    public UserStatusDTO updateUserProfile(Long userId, EditUserBody body) {
-        log.info("Updating profile for userId={}", userId);
+    public UserStatusDTO updateLoggedInUserProfile(LocalUser user, EditUserBody body) {
+        log.info("Updating profile for user={}", user.getUsername());
 
-        LocalUser user = userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.warn("User not found for profile update: id={}", userId);
-                    return new UserNotFoundException("user not found");
-                });
 
-        if (body.getEmail() != null) user.setEmail(body.getEmail());
+        if (body.getEmail() != null) {
+			user.setEmail(body.getEmail());
+			user.setVerified(false);
+			log.info("New Email  required verification for user {}", user.getUsername());
+			RequestEmailVerificationDTO requestEmailVerificationDTO = new RequestEmailVerificationDTO();
+			requestEmailVerificationDTO.setEmail(body.getEmail());
+			requestEmailVerificationDTO.setUsername(user.getUsername());
+			requestEmailVerification(requestEmailVerificationDTO);
+			log.info("New Email verification request sent for user {}", user.getUsername());
+		}
         if (body.getUsername() != null) user.setUserName(body.getUsername());
         if (body.getFirstName() != null) user.setFirstName(body.getFirstName());
         if (body.getLastName() != null) user.setLastName(body.getLastName());
@@ -329,20 +331,60 @@ public class UserService {
 		}
 
         userRepository.save(user);
-        log.info("User profile updated successfully for userId={}", userId);
+        log.info("User profile updated successfully for user={}", user.getUsername());
 
         return UserStatusDTO.builder()
                 .statusMessage("Profile updated successfully.")
-		        .isVerified(null)
-		        .isVerified(null)
+		        .isVerified(user.isVerified())
+		        .isEnabled(user.isEnabled())
+		        .updatedBy(user.getUpdatedBy())
+		        .updatedAt(Instant.now())
                 .build();
     }
+
+	@Transactional
+	public UserStatusDTO updateUserProfileById(Long userId, EditUserBody body) {
+		log.info("Updating profile for userId={}", userId);
+
+		LocalUser user = userRepository.findByIdAndIsDeleted(userId,false)
+				.orElseThrow(() -> {
+					log.warn("User not found for profile update: id={}", userId);
+					return new UserNotFoundException("user not found");
+				});
+
+		if (body.getEmail() != null) user.setEmail(body.getEmail());
+		if (body.getUsername() != null) user.setUserName(body.getUsername());
+		if (body.getFirstName() != null) user.setFirstName(body.getFirstName());
+		if (body.getLastName() != null) user.setLastName(body.getLastName());
+		if (body.getPhoneNumber() != null) user.setPhoneNumber(body.getPhoneNumber());
+		if(body.getAddress() != null)
+		{
+			Address address = new Address();
+			if (body.getAddress().getAddressLine1()!= null) address.setAddressLine1(body.getAddress().getAddressLine1());
+			if (body.getAddress().getAddressLine2()!= null) address.setAddressLine2(body.getAddress().getAddressLine2());
+			if (body.getAddress().getCity()!= null) address.setCity(body.getAddress().getCity());
+			if (body.getAddress().getCountry()!= null) address.setCountry(body.getAddress().getCountry());
+
+			user.getAddresses().add(address);
+		}
+
+		userRepository.save(user);
+		log.info("User profile updated successfully for user={}", user.getUsername());
+
+		return UserStatusDTO.builder()
+				.statusMessage("Profile updated successfully.")
+				.isVerified(user.isVerified())
+				.isEnabled(user.isEnabled())
+				.updatedBy(user.getUpdatedBy())
+				.updatedAt(Instant.now())
+				.build();
+	}
 
     @Transactional
     public LogoutResponseDTO logoutUser(LocalUser user) {
         log.info("Logging out user {}", user.getUsername());
 
-        List<LoginTokens> tokens = loginTokensRepo.findAllByUser(user);
+        List<LoginTokens> tokens = loginTokensRepo.findAllByUserAndIsDeleted(user,false);
         if (!tokens.isEmpty()) {
             tokens.forEach(token -> {
                 token.setExpired(true);
